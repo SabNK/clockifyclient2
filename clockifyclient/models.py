@@ -51,6 +51,14 @@ class ClockifyDatetime:
     def __str__(self):
         return self.clockify_datetime
 
+class HourlyRate:
+    """Features of users and projects"""
+    def __init__(self, amount, currency):
+        self.amount = amount
+        self.currency = currency
+
+    def __str__(self):
+        return f"HourlyRate {self.amount} {self.currency}"
 
 class APIObject:
     """An object that can be returned by the clockify API"""
@@ -182,10 +190,18 @@ class NamedAPIObject(APIObject):
 
 
 class User(NamedAPIObject):
+    def __init__(self, obj_id, name, email):
+        super().__init__(obj_id=obj_id, name=name)
+        self.email = email
 
     def __str__(self):
-        return f"User '{self.name}' ({self.obj_id})"
+        return f"User '{self.name}' {self.email} ({self.obj_id})"
 
+    @classmethod
+    def init_from_dict(cls, dict_in):
+        return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
+                   name=cls.get_item(dict_in=dict_in, key='name'),
+                   email = cls.get_item(dict_in=dict_in, key='email'))
 
 class Workspace(NamedAPIObject):
     def __str__(self):

@@ -26,7 +26,6 @@ def test_time_entry_from_dict(mock_models_timezone):
     assert time_entry_dict_again['description'] == 'testing description'
     assert time_entry_dict_again['projectId'] == '123456'
 
-
 def test_time_entry(a_date):
     """Test with different input parameters"""
     # minimal parameters
@@ -61,7 +60,7 @@ def test_date_conversion(mock_models_timezone):
 
 def test_str(a_date):
     """Getting coverage up """
-    str(User(obj_id='123', name='test'))
+    str(User(obj_id='123', name='test', email = 'test@test.com'))
     str(Project(obj_id='123', name='test'))
     str(ProjectStub(obj_id='123'))
     str(Workspace(obj_id='123', name='test'))

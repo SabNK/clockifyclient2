@@ -28,7 +28,11 @@ def a_workspace():
 
 @pytest.fixture()
 def a_user():
-    return User(obj_id='1232356', name='testuser')
+    return User(obj_id='1232356', name='testuser', email='test_user@mail.ru')
+
+@pytest.fixture()
+def an_hourly_rate():
+    return HourlyRate(amount=1000.90, currency='RUR')
 
 
 @pytest.fixture()
