@@ -4,10 +4,6 @@ import datetime
 from tests.factories import RequestsMock
 from pytest import fixture
 
-#print (" Гриша тупица ")
-# def pytest_runtest_setup(item):
-#     # called for running each test in 'a' directory
-#     print("setting up Гриша", item)
 
 @fixture
 def mock_requests(monkeypatch):

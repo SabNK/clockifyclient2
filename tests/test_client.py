@@ -58,6 +58,7 @@ def a_mock_api(mock_requests, an_api, a_project, a_user, a_workspace, a_time_ent
     mock_api = Mock(spec=ClockifyAPI)
     mock_api.get_projects.return_value = [a_project]
     mock_api.get_user.return_value = a_user
+    mock_api.get_users.return_value = [a_user]
     mock_api.get_workspaces.return_value = [a_workspace]
     mock_api.add_time_entry.return_value = a_time_entry
     mock_api.set_active_time_entry_end.return_value = a_time_entry
@@ -76,6 +77,7 @@ def test_api_calls_get(mock_requests, an_api):
     user = an_api.get_user(api_key='mock_key')
     assert user.obj_id == '1234'
     assert user.name == 'testuser'
+    assert user.email == 'test@localhost.com'
 
     mock_requests.set_response(ClockifyMockResponses.GET_PROJECTS)
     projects = an_api.get_projects(api_key='mock_key', workspace=workspaces[0])
