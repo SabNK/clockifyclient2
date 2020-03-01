@@ -582,6 +582,31 @@ class ClockifyMockResponses:
         ] """,
         200
     )
+    GET_TASKS = RequestMockResponse(
+        """ [
+            {
+                "id": "5e5ba93e7df81c0df5f2a1c2",
+                "name": "drink me",
+                "projectId": "5e5b9c7995ae537fbde0778c",
+                "assigneeIds": [],
+                "assigneeId": "",
+                "estimate": "PT0S",
+                "status": "ACTIVE",
+                "duration": "PT0S"
+            },
+            {
+                "id": "5e5ba91100352a1175bc90fa",
+                "name": "eat me",
+                "projectId": "5e5b9c7995ae537fbde0778c",
+                "assigneeIds": [],
+                "assigneeId": "",
+                "estimate": "PT0S",
+                "status": "ACTIVE",
+                "duration": "PT0S"
+            }
+        ]  """,
+        200
+    )
 
     # calling post '/workspaces/<workspace id>/time-entries'
     POST_TIME_ENTRY = RequestMockResponse(

@@ -221,6 +221,10 @@ class ProjectStub(Project):
     def __str__(self):
         return f"ProjectStub ({self.obj_id})"
 
+class Task(NamedAPIObject):
+    def __str__(self):
+        return f"Task '{self.name}' ({self.obj_id})"
+
 
 class TimeEntry(APIObject):
 

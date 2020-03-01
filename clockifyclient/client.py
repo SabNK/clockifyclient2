@@ -2,7 +2,7 @@
 import datetime
 
 from clockifyclient.api import APIServer, APIServer404
-from clockifyclient.models import Workspace, User, Project, TimeEntry, ClockifyDatetime
+from clockifyclient.models import Workspace, User, Project, Task, TimeEntry, ClockifyDatetime
 from functools import lru_cache
 
 
@@ -211,6 +211,28 @@ class ClockifyAPI:
             path=f"/workspaces/{workspace.obj_id}/projects", api_key=api_key
         )
         return [Project.init_from_dict(x) for x in response]
+
+    def get_tasks(self, api_key, workspace, project):
+        """Get all tasks for given project
+
+        Parameters
+        ----------
+        api_key: str
+            Clockify Api key
+        workspace: Workspace
+        project: Project
+            Get tasks in this project
+
+        Returns
+        -------
+        List[Task]
+
+        """
+        response = self.api_server.get(
+            path=f"/workspaces/{workspace.obj_id}/projects/{project.obj_id}/tasks", api_key=api_key
+        )
+        return [Task.init_from_dict(x) for x in response]
+
 
     def add_time_entry(self, api_key: str, workspace: Workspace, time_entry: TimeEntry):
         """

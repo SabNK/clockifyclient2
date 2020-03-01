@@ -92,6 +92,12 @@ def test_api_calls_get(mock_requests, an_api):
     assert projects[0].name == "Down the Rabbit Hole"
     assert projects[1].obj_id == "5e5b9f0195ae537fbde078bc"
 
+    mock_requests.set_response(ClockifyMockResponses.GET_TASKS)
+    tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project = projects[0])
+    assert len(tasks) == 2
+    assert tasks[0].name == "drink me"
+    assert tasks[1].obj_id == "5e5ba91100352a1175bc90fa"
+
 
 def test_api_add_time_entry(mock_requests, an_api, a_workspace, a_time_entry):
     mock_requests.set_response(ClockifyMockResponses.POST_TIME_ENTRY)
