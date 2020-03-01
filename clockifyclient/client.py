@@ -174,6 +174,24 @@ class ClockifyAPI:
         response = self.api_server.get(path="/user", api_key=api_key)
         return User.init_from_dict(response)
 
+    def get_users(self, api_key, workspace):
+        """Get users for the given workspace
+
+        Parameters
+        ----------
+        api_key: str
+            Clockify Api key
+        workspace: Workspace
+            Get users in this workspace
+
+        Returns
+        -------
+        List[User]
+
+        """
+        response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
+        return [User.init_from_dict(x) for x in response]
+
     def get_projects(self, api_key, workspace):
         """Get all projects for given workspace
 

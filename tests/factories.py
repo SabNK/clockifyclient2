@@ -106,51 +106,481 @@ class ClockifyMockResponses:
 
     # calling get /workspaces
     GET_WORKSPACES = RequestMockResponse(
-        """[{"id": "12345", "name": "testuser", "hourlyRate": {"amount": 0, "currency": "USD"},           
-             "memberships": [
-              {"userId": "112424", "hourlyRate": null, "targetId": "123456",
-               "membershipType": "WORKSPACE", "membershipStatus": "ACTIVE"}],
-               "workspaceSettings": {"timeRoundingInReports": false, "onlyAdminsSeeBillableRates": true,
-                                     "onlyAdminsCreateProject": true, "onlyAdminsSeeDashboard": false,
-                                     "defaultBillableProjects": true, "lockTimeEntries": null,
-                                     "round": {"round": "Round to nearest", "minutes": "15"}, "projectFavorites": true,
-                                     "canSeeTimeSheet": false, "projectPickerSpecialFilter": false, "forceProjects": false,
-                                     "forceTasks": false, "forceTags": false, "forceDescription": false,
-                                     "onlyAdminsSeeAllTimeEntries": false, "onlyAdminsSeePublicProjectsEntries": false,
-                                     "trackTimeDownToSecond": true, "projectGroupingLabel": "client", "adminOnlyPages": [],
-                                     "automaticLock": null, "onlyAdminsCreateTag": false}, "imageUrl": "",
-                                     "featureSubscriptionType": null}
-            ]""",
+        """ [
+            {
+                "id": "5e5b8b0a95ae537fbde06e2f",
+                "name": "Lewis Carroll's workspace",
+                "hourlyRate": {
+                    "amount": 0,
+                    "currency": "USD"
+                },
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b0a95ae537fbde06e2f",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "workspaceSettings": {
+                    "timeRoundingInReports": false,
+                    "onlyAdminsSeeBillableRates": true,
+                    "onlyAdminsCreateProject": true,
+                    "onlyAdminsSeeDashboard": false,
+                    "defaultBillableProjects": true,
+                    "isProjectPublicByDefault": true,
+                    "lockTimeEntries": null,
+                    "round": {
+                        "round": "Round to nearest",
+                        "minutes": "15"
+                    },
+                    "projectFavorites": true,
+                    "canSeeTimeSheet": false,
+                    "projectPickerSpecialFilter": false,
+                    "forceProjects": false,
+                    "forceTasks": false,
+                    "forceTags": false,
+                    "forceDescription": false,
+                    "onlyAdminsSeeAllTimeEntries": false,
+                    "onlyAdminsSeePublicProjectsEntries": false,
+                    "trackTimeDownToSecond": true,
+                    "projectGroupingLabel": "client",
+                    "adminOnlyPages": [],
+                    "automaticLock": null,
+                    "onlyAdminsCreateTag": false
+                },
+                "imageUrl": "",
+                "featureSubscriptionType": null
+            },
+            {
+                "id": "5e5b8b3a95ae537fbde06e58",
+                "name": "Alice in Wonderland",
+                "hourlyRate": {
+                    "amount": 10000,
+                    "currency": "GBP"
+                },
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b94837df81c0df5f2979c",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b998195ae537fbde0761d",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "workspaceSettings": {
+                    "timeRoundingInReports": false,
+                    "onlyAdminsSeeBillableRates": true,
+                    "onlyAdminsCreateProject": true,
+                    "onlyAdminsSeeDashboard": false,
+                    "defaultBillableProjects": true,
+                    "isProjectPublicByDefault": true,
+                    "lockTimeEntries": null,
+                    "round": {
+                        "round": "Round to nearest",
+                        "minutes": "15"
+                    },
+                    "projectFavorites": true,
+                    "canSeeTimeSheet": false,
+                    "projectPickerSpecialFilter": false,
+                    "forceProjects": false,
+                    "forceTasks": false,
+                    "forceTags": false,
+                    "forceDescription": false,
+                    "onlyAdminsSeeAllTimeEntries": false,
+                    "onlyAdminsSeePublicProjectsEntries": false,
+                    "trackTimeDownToSecond": false,
+                    "projectGroupingLabel": "client",
+                    "adminOnlyPages": [],
+                    "automaticLock": null,
+                    "onlyAdminsCreateTag": false
+                },
+                "imageUrl": "https://img.clockify.me/2020-03-01T11%3A07%3A16.041ZIn+Wonderland.jpg",
+                "featureSubscriptionType": null
+            }
+        ] """,
         200
     )
 
     # calling get /user
     GET_USER = RequestMockResponse(
-        """{"id":"1234","email":"test@localhost.com","name":"testuser","memberships":[{"userId":"123456",
-        "hourlyRate":null,"targetId":"123456","membershipType":"WORKSPACE","membershipStatus":"ACTIVE"},
-        {"userId":"24763567","hourlyRate":null,"targetId":"5645645","membershipType":"PROJECT",
-        "membershipStatus":"ACTIVE"}],"profilePicture":"https://localhost/clockify/no-user-image.png",
-        "activeWorkspace":"123245","defaultWorkspace":"2352346","settings":{"weekStart":"MONDAY",
-        "timeZone":"Europe/Amsterdam","timeFormat":"HOUR12","dateFormat":"MM/DD/YYYY","sendNewsletter":true,
-        "weeklyUpdates":false,"longRunning":false,"summaryReportSettings":{"group":"Project","subgroup":"Time Entry"},
-        "isCompactViewOn":false,"dashboardSelection":"ME","dashboardViewType":"PROJECT",
-        "dashboardPinToTop":false,"projectListCollapse":null,"collapseAllProjectLists":false,
-        "groupSimilarEntriesDisabled":false,"myStartOfDay":"09:00","timeTrackingManual":false},"status":"ACTIVE"}""",
+        """
+            {
+                "id": "5e5b8b0a95ae537fbde06e2e",
+                "email": "lewis_carroll_1832@mail.ru",
+                "name": "Lewis Carroll",
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b0a95ae537fbde06e2f",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9f0195ae537fbde078bc",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "profilePicture": "https://img.clockify.me/2020-03-01T10%3A33%3A32.180Zcarroll.png",
+                "activeWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "defaultWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "settings": {
+                    "weekStart": "MONDAY",
+                    "timeZone": "Europe/Moscow",
+                    "timeFormat": "HOUR24",
+                    "dateFormat": "DD/MM/YYYY",
+                    "sendNewsletter": false,
+                    "weeklyUpdates": false,
+                    "longRunning": false,
+                    "summaryReportSettings": {
+                        "group": "Project",
+                        "subgroup": "Time Entry"
+                    },
+                    "isCompactViewOn": false,
+                    "dashboardSelection": "ME",
+                    "dashboardViewType": "PROJECT",
+                    "dashboardPinToTop": false,
+                    "projectListCollapse": 50,
+                    "collapseAllProjectLists": false,
+                    "groupSimilarEntriesDisabled": false,
+                    "myStartOfDay": "09:00",
+                    "timeTrackingManual": false
+                },
+                "status": "ACTIVE"
+            }
+        """,
+        200
+    )
+    # calling get /workspaces/<workspace id>/users
+    GET_USERS = RequestMockResponse(
+        """ [
+            {
+                "id": "5e5b91837df81c0df5f29609",
+                "email": "alice_liddell_1852@list.ru",
+                "name": "Alice",
+                "memberships": [
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e59",
+                        "membershipType": "USERGROUP",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9d2e95ae537fbde077e4",
+                        "membershipType": "USERGROUP",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "profilePicture": "https://img.clockify.me/2020-03-01T10%3A49%3A42.471Zalice3.jpg",
+                "activeWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "defaultWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "settings": {
+                    "weekStart": "MONDAY",
+                    "timeZone": "Europe/Moscow",
+                    "timeFormat": "HOUR12",
+                    "dateFormat": "MM/DD/YYYY",
+                    "sendNewsletter": false,
+                    "weeklyUpdates": false,
+                    "longRunning": false,
+                    "summaryReportSettings": {
+                        "group": "Project",
+                        "subgroup": "Time Entry"
+                    },
+                    "isCompactViewOn": false,
+                    "dashboardSelection": "ME",
+                    "dashboardViewType": "PROJECT",
+                    "dashboardPinToTop": false,
+                    "projectListCollapse": 50,
+                    "collapseAllProjectLists": false,
+                    "groupSimilarEntriesDisabled": false,
+                    "myStartOfDay": "09:00",
+                    "timeTrackingManual": false
+                },
+                "status": "ACTIVE"
+            },
+            {
+                "id": "5e5b998195ae537fbde0761d",
+                "email": "cheshire_cat_1788@mail.ru",
+                "name": "Cheshire Cat",
+                "memberships": [
+                    {
+                        "userId": "5e5b998195ae537fbde0761d",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "profilePicture": "https://img.clockify.me/2020-03-01T11%3A21%3A32.363ZCheshire+Cat.jpg",
+                "activeWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "defaultWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "settings": {
+                    "weekStart": "MONDAY",
+                    "timeZone": "Europe/Moscow",
+                    "timeFormat": "HOUR12",
+                    "dateFormat": "MM/DD/YYYY",
+                    "sendNewsletter": false,
+                    "weeklyUpdates": false,
+                    "longRunning": false,
+                    "summaryReportSettings": {
+                        "group": "Project",
+                        "subgroup": "Time Entry"
+                    },
+                    "isCompactViewOn": false,
+                    "dashboardSelection": "ME",
+                    "dashboardViewType": "PROJECT",
+                    "dashboardPinToTop": false,
+                    "projectListCollapse": 50,
+                    "collapseAllProjectLists": false,
+                    "groupSimilarEntriesDisabled": false,
+                    "myStartOfDay": "09:00",
+                    "timeTrackingManual": false
+                },
+                "status": "ACTIVE"
+            },
+            {
+                "id": "5e5b8b0a95ae537fbde06e2e",
+                "email": "lewis_carroll_1832@mail.ru",
+                "name": "Lewis Carroll",
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9f0195ae537fbde078bc",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "profilePicture": "https://img.clockify.me/2020-03-01T10%3A33%3A32.180Zcarroll.png",
+                "activeWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "defaultWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "settings": {
+                    "weekStart": "MONDAY",
+                    "timeZone": "Europe/Moscow",
+                    "timeFormat": "HOUR24",
+                    "dateFormat": "DD/MM/YYYY",
+                    "sendNewsletter": false,
+                    "weeklyUpdates": false,
+                    "longRunning": false,
+                    "summaryReportSettings": {
+                        "group": "Project",
+                        "subgroup": "Time Entry"
+                    },
+                    "isCompactViewOn": false,
+                    "dashboardSelection": "ME",
+                    "dashboardViewType": "PROJECT",
+                    "dashboardPinToTop": false,
+                    "projectListCollapse": 50,
+                    "collapseAllProjectLists": false,
+                    "groupSimilarEntriesDisabled": false,
+                    "myStartOfDay": "09:00",
+                    "timeTrackingManual": false
+                },
+                "status": "ACTIVE"
+            },
+            {
+                "id": "5e5b94837df81c0df5f2979c",
+                "email": "white_rabbit_1865@mail.ru",
+                "name": "White Rabbit",
+                "memberships": [
+                    {
+                        "userId": "5e5b94837df81c0df5f2979c",
+                        "hourlyRate": null,
+                        "targetId": "5e5b8b3a95ae537fbde06e58",
+                        "membershipType": "WORKSPACE",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b94837df81c0df5f2979c",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9d2e95ae537fbde077e4",
+                        "membershipType": "USERGROUP",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "profilePicture": "https://img.clockify.me/2020-03-01T10%3A59%3A17.507Zwhite_rabbit.jpg",
+                "activeWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "defaultWorkspace": "5e5b8b3a95ae537fbde06e58",
+                "settings": {
+                    "weekStart": "MONDAY",
+                    "timeZone": "Europe/Moscow",
+                    "timeFormat": "HOUR12",
+                    "dateFormat": "MM/DD/YYYY",
+                    "sendNewsletter": false,
+                    "weeklyUpdates": false,
+                    "longRunning": false,
+                    "summaryReportSettings": {
+                        "group": "Project",
+                        "subgroup": "Time Entry"
+                    },
+                    "isCompactViewOn": false,
+                    "dashboardSelection": "ME",
+                    "dashboardViewType": "PROJECT",
+                    "dashboardPinToTop": false,
+                    "projectListCollapse": 50,
+                    "collapseAllProjectLists": false,
+                    "groupSimilarEntriesDisabled": false,
+                    "myStartOfDay": "09:00",
+                    "timeTrackingManual": false
+                },
+                "status": "ACTIVE"
+            }
+        ] """,
         200
     )
 
     # calling /workspaces/<workspace id>/projects
     GET_PROJECTS = RequestMockResponse(
-        """[{"id":"123456","name":"Project1","hourlyRate":{"amount":0,"currency":"USD"},"clientId":"",
-        "workspaceId":"123456","billable":true,"memberships":[{"userId":"123456","hourlyRate":null,"targetId":"123456",
-        "membershipType":"PROJECT","membershipStatus":"ACTIVE"}],"color":"#F44336","estimate":{"estimate":"PT0S",
-        "type":"AUTO"},"archived":false,"duration":"PT86H40M13S","clientName":"","public":false},{"id":"234567",
-        "name":"Project2","hourlyRate":{"amount":0,"currency":"USD"},"clientId":"","workspaceId":"123456",
-        "billable":true,"memberships":[{"userId":"123456","hourlyRate":null,"targetId":"123456",
-        "membershipType":"PROJECT","membershipStatus":"ACTIVE"}],"color":"#E91E63","estimate":{"estimate":"PT0S",
-        "type":"AUTO"},"archived":false,"duration":"PT21H7M48S","clientName":"","public":false}]""",
+        """ [
+            {
+                "id": "5e5b9c7995ae537fbde0778c",
+                "name": "Down the Rabbit Hole",
+                "hourlyRate": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "clientId": "",
+                "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "billable": true,
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b91837df81c0df5f29609",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    },
+                    {
+                        "userId": "5e5b9d2e95ae537fbde077e4",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9c7995ae537fbde0778c",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "color": "#009688",
+                "estimate": {
+                    "estimate": "PT0S",
+                    "type": "AUTO"
+                },
+                "archived": false,
+                "duration": "PT0S",
+                "clientName": "",
+                "note": "",
+                "template": false,
+                "public": false
+            },
+            {
+                "id": "5e5b9f0195ae537fbde078bc",
+                "name": "The Pool of Tears",
+                "hourlyRate": {
+                    "amount": 0,
+                    "currency": "GBP"
+                },
+                "clientId": "",
+                "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "billable": true,
+                "memberships": [
+                    {
+                        "userId": "5e5b8b0a95ae537fbde06e2e",
+                        "hourlyRate": null,
+                        "targetId": "5e5b9f0195ae537fbde078bc",
+                        "membershipType": "PROJECT",
+                        "membershipStatus": "ACTIVE"
+                    }
+                ],
+                "color": "#FF5722",
+                "estimate": {
+                    "estimate": "PT0S",
+                    "type": "AUTO"
+                },
+                "archived": false,
+                "duration": "PT0S",
+                "clientName": "",
+                "note": "",
+                "template": false,
+                "public": false
+            }
+        ] """,
         200
-
     )
 
     # calling post '/workspaces/<workspace id>/time-entries'

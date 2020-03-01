@@ -69,21 +69,28 @@ def test_api_calls_get(mock_requests, an_api):
     """Some regular calls to api should yield correct python objects """
     mock_requests.set_response(ClockifyMockResponses.GET_WORKSPACES)
     workspaces = an_api.get_workspaces(api_key='mock_key')
-    assert len(workspaces) == 1
-    assert workspaces[0].obj_id == '12345'
-    assert workspaces[0].name == 'testuser'
+    assert len(workspaces) == 2
+    assert workspaces[0].obj_id == "5e5b8b0a95ae537fbde06e2f"
+    assert workspaces[0].name == "Lewis Carroll's workspace"
 
     mock_requests.set_response(ClockifyMockResponses.GET_USER)
     user = an_api.get_user(api_key='mock_key')
-    assert user.obj_id == '1234'
-    assert user.name == 'testuser'
-    assert user.email == 'test@localhost.com'
+    assert user.obj_id == "5e5b8b0a95ae537fbde06e2e"
+    assert user.name == "Lewis Carroll"
+    assert user.email == "lewis_carroll_1832@mail.ru"
+
+    mock_requests.set_response(ClockifyMockResponses.GET_USERS)
+    users = an_api.get_users(api_key='mock_key', workspace=workspaces[1])
+    assert len(users) == 4
+    assert users[0].obj_id == "5e5b91837df81c0df5f29609"
+    assert users[1].name == "Cheshire Cat"
+    assert users[2].email == "lewis_carroll_1832@mail.ru"
 
     mock_requests.set_response(ClockifyMockResponses.GET_PROJECTS)
-    projects = an_api.get_projects(api_key='mock_key', workspace=workspaces[0])
+    projects = an_api.get_projects(api_key='mock_key', workspace=workspaces[1])
     assert len(projects) == 2
-    assert projects[0].name == 'Project1'
-    assert projects[1].obj_id == '234567'
+    assert projects[0].name == "Down the Rabbit Hole"
+    assert projects[1].obj_id == "5e5b9f0195ae537fbde078bc"
 
 
 def test_api_add_time_entry(mock_requests, an_api, a_workspace, a_time_entry):
