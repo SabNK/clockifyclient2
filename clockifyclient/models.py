@@ -225,6 +225,9 @@ class Task(NamedAPIObject):
     def __str__(self):
         return f"Task '{self.name}' ({self.obj_id})"
 
+class Tag(NamedAPIObject):
+    def __str__(self):
+        return f"Tag '{self.name}' ({self.obj_id})"
 
 class TimeEntry(APIObject):
 

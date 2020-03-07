@@ -20,10 +20,18 @@ def a_server():
 def a_project():
     return Project(obj_id='1234', name='testproject')
 
+@pytest.fixture()
+def a_task():
+    return Task(obj_id='123235', name='testtask')
+
 
 @pytest.fixture()
 def a_workspace():
     return Workspace(obj_id='123235', name='testworkspace')
+
+@pytest.fixture()
+def a_tag():
+    return Tag(obj_id='123235', name='testtag')
 
 
 @pytest.fixture()
@@ -60,6 +68,8 @@ def a_mock_api(mock_requests, an_api, a_project, a_user, a_workspace, a_time_ent
     mock_api.get_user.return_value = a_user
     mock_api.get_users.return_value = [a_user]
     mock_api.get_workspaces.return_value = [a_workspace]
+    mock_api.get_tags.return_value = [a_tag]
+    mack_api.get_tasks.return_value = [a_task]
     mock_api.add_time_entry.return_value = a_time_entry
     mock_api.set_active_time_entry_end.return_value = a_time_entry
     return mock_api
@@ -97,6 +107,14 @@ def test_api_calls_get(mock_requests, an_api):
     assert len(tasks) == 2
     assert tasks[0].name == "drink me"
     assert tasks[1].obj_id == "5e5ba91100352a1175bc90fa"
+
+    mock_requests.set_response(ClockifyMockResponses.GET_TAGS)
+    tags = an_api.get_tags(api_key='mock_key', workspace=workspaces[1])
+    assert len(tags) == 3
+    assert tags[0].name == "test"
+    assert tags[1].obj_id == "5e6381b72fe7db4da05dea37"
+    assert tags[2].name == "test3"
+
 
 
 def test_api_add_time_entry(mock_requests, an_api, a_workspace, a_time_entry):

@@ -582,6 +582,7 @@ class ClockifyMockResponses:
         ] """,
         200
     )
+    # calling /workspaces/<workspace id>/projects/<project id>/tasks
     GET_TASKS = RequestMockResponse(
         """ [
             {
@@ -607,6 +608,32 @@ class ClockifyMockResponses:
         ]  """,
         200
     )
+
+    # calling /workspaces/<workspace id>/tags
+    GET_TAGS = RequestMockResponse(
+        """ [
+            {
+                "id": "5e63811fea0d47492eb35dcd",
+                "name": "test",
+                "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "archived": false
+            },
+            {
+                "id": "5e6381b72fe7db4da05dea37",
+                "name": "test2",
+                "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "archived": false
+            },
+            {
+                "id": "5e6381bbea0d47492eb35e0c",
+                "name": "test3",
+                "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "archived": false
+            }
+        ] """,
+        200
+    )
+
 
     # calling post '/workspaces/<workspace id>/time-entries'
     POST_TIME_ENTRY = RequestMockResponse(
