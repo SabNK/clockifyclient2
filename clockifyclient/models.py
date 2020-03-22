@@ -1,6 +1,7 @@
 """ Models the objects with which the clockify API works. One level above json dicts.
 Models as simply as possible, omitting any fields not used by this package
 """
+from abc import abstractmethod
 import datetime
 
 import dateutil
@@ -51,30 +52,11 @@ class ClockifyDatetime:
     def __str__(self):
         return self.clockify_datetime
 
-class HourlyRate:
-    """Features of users and projects"""
-    def __init__(self, amount, currency):
-        self.amount = amount
-        self.currency = currency
-
-    def __str__(self):
-        return f"HourlyRate {self.amount} {self.currency}"
-
 class APIObject:
-    """An object that can be returned by the clockify API"""
-
-    def __init__(self, obj_id):
-        """
-
-        Parameters
-        ----------
-        obj_id: str
-            object id hash
-        """
-        self.obj_id = obj_id
+    """An object that is used in the clockify API and can be intiated from API response"""
 
     def __str__(self):
-        return f"API object {self.obj_id}"
+        return f"{self.__class__.__name__} "
 
     @classmethod
     def get_item(cls, dict_in, key, raise_error=True):
@@ -144,6 +126,7 @@ class APIObject:
             raise ObjectParseException(msg)
 
     @classmethod
+    @abstractmethod
     def init_from_dict(cls, dict_in):
         """ Create an instance of this class from the expected json dict returned from Clockify API
         Parameters
@@ -161,12 +144,67 @@ class APIObject:
         instance of this class, initialized to the values in dict_in
 
         """
-        return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
-                   name=cls.get_item(dict_in=dict_in, key='name'))
+        return
+
+class HourlyRate(APIObject):
+    """Feature of users per project and per workspace and default for workspaces"""
+    def __init__(self, amount, currency):
+        self.amount = amount
+        self.currency = currency
+
+    def __str__(self):
+        return super().__str__() + f"{self.amount} {self.currency}"
+
+    @classmethod
+    def init_from_dict(cls, dict_in):
+        return cls(amount=cls.get_item(cls.get_item(dict_in=dict_in, key='hourlyRate'), key='amount'),
+                   currency=cls.get_item(cls.get_item(dict_in=dict_in, key='hourlyRate'), key='currency'))
+
+class APIObjectID(APIObject):
+    """An object that can be returned by the clockify API, has its ID"""
+    def __init__(self, obj_id):
+        """
+        Parameters
+        ----------
+        obj_id: str
+            object id hash
+        """
+        self.obj_id = obj_id
+
+    def __eq__(self, other):
+        return self.obj_id == other.obj_id
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return self.obj_id.__hash__()
+
+    def __str__(self):
+        return super().__str__() + f"({self.obj_id}) "
+
+    @classmethod
+    def init_from_dict(cls, dict_in):
+        return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'))
+
+class UserGroup(APIObjectID):
+    """Group of Users - is used to assign multi[le users to project"""
+
+    def __init__(self, obj_id):
+        super().__init__(obj_id=obj_id)
+        self.users = []
+
+    @classmethod
+    def init_from_dict(cls, dict_in):
+
+        for membership in cls.get_item(dict_in=dict_in, key='memberships'):
+            if membership['membershipType'] == "USERGROUP":
+                target_id = membership['targetId']
+                return cls(obj_id=target_id)
 
 
-class NamedAPIObject(APIObject):
-
+class NamedAPIObject(APIObjectID):
+    """An object of clockify API, with name and ID"""
     def __init__(self, obj_id, name):
         """
 
@@ -181,59 +219,97 @@ class NamedAPIObject(APIObject):
         self.name = name
 
     def __str__(self):
-        return f"API object '{self.name}' {self.obj_id}"
+        return super().__str__() + f"'{self.name}' "
 
     @classmethod
     def init_from_dict(cls, dict_in):
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
-                   name=cls.get_item(dict_in=dict_in, key='name'))
+            name=cls.get_item(dict_in=dict_in, key='name'))
 
+class Workspace(NamedAPIObject):
 
-class User(NamedAPIObject):
-    def __init__(self, obj_id, name, email):
+    def __init__(self, obj_id, name, hourly_rate):
         super().__init__(obj_id=obj_id, name=name)
-        self.email = email
-
-    def __str__(self):
-        return f"User '{self.name}' {self.email} ({self.obj_id})"
+        self.hourly_rate = hourly_rate
 
     @classmethod
     def init_from_dict(cls, dict_in):
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
                    name=cls.get_item(dict_in=dict_in, key='name'),
-                   email = cls.get_item(dict_in=dict_in, key='email'))
+                   hourly_rate=HourlyRate.init_from_dict(dict_in=dict_in))
 
-class Workspace(NamedAPIObject):
+class User(NamedAPIObject):
+    def __init__(self, obj_id, name, email, hourly_rates: {APIObjectID: HourlyRate}):
+        super().__init__(obj_id=obj_id, name=name)
+        self.email = email
+        self.hourly_rates = hourly_rates
+
     def __str__(self):
-        return f"Workspace '{self.name}' ({self.obj_id})"
+        return super().__str__() + f"email:{self.email}"
 
+    @classmethod
+    def init_from_dict(cls, dict_in):
+        obj_id = cls.get_item(dict_in=dict_in, key='id')
+        name = cls.get_item(dict_in=dict_in, key='name')
+        email = cls.get_item(dict_in=dict_in, key='email')
+        hourly_rates = {}
+        for membership in dict_in['memberships']:
+            if membership['hourlyRate']:
+                hourly_rates[APIObjectID(cls.get_item(dict_in=membership, key='targetId'))] = \
+                    HourlyRate.init_from_dict(membership)
+        return cls(obj_id=obj_id, name=name, email=email, hourly_rates=hourly_rates)
+
+    def get_hourly_rate(self, workspace, project):
+        if project in self.hourly_rates.keys() and self.hourly_rates[project]:
+            return self.hourly_rates[project]
+        elif workspace in self.hourly_rates.keys() and self.hourly_rates[workspace]:
+            return self.hourly_rates[workspace]
+        else:
+            return workspace.hourly_rate
 
 class Project(NamedAPIObject):
-    def __str__(self):
-        return f"Project '{self.name}' ({self.obj_id})"
-
-
-class ProjectStub(Project):
-    """A project with only an id. This occurs when a project ID is returned by API as part of a different query"""
-    def __init__(self, obj_id):
-        super().__init__(obj_id=obj_id, name=None)
+    def __init__(self, obj_id, name, client, hourly_rates: {APIObjectID: HourlyRate}):
+        super().__init__(obj_id=obj_id, name=name)
+        self.client = client
+        self.hourly_rates = hourly_rates
 
     def __str__(self):
-        return f"ProjectStub ({self.obj_id})"
+        return super().__str__() + f"for client {self.client}"
+
+    @classmethod
+    def init_from_dict(cls, dict_in):
+        obj_id = cls.get_item(dict_in=dict_in, key='id')
+        name = cls.get_item(dict_in=dict_in, key='name')
+        client = APIObjectID(cls.get_item(dict_in=dict_in, key='clientId'))
+        hourly_rates = {APIObjectID(obj_id): HourlyRate.init_from_dict(dict_in)}
+        for membership in dict_in['memberships']:
+            if membership['hourlyRate']:
+                hourly_rates[APIObjectID(cls.get_item(dict_in=membership, key ='userId'))] = HourlyRate.init_from_dict(membership)
+        return cls(obj_id=obj_id, name=name, client=client, hourly_rates=hourly_rates)
+
+    def get_hourly_rate(self, workspace, user):
+        if user in self.hourly_rates.keys() and self.hourly_rates[user]:
+            return self.hourly_rates[user]
+        elif self in self.hourly_rates.keys() and self.hourly_rates[self]:
+            return self.hourly_rates[self]
+        elif workspace in self.hourly_rates.keys() and self.hourly_rates[workspace]:
+            return user.hourly_rates[workspace]
+        else:
+            return workspace.hourly_rate
+
+class Client(NamedAPIObject):
+    pass
 
 class Task(NamedAPIObject):
-    def __str__(self):
-        return f"Task '{self.name}' ({self.obj_id})"
+    pass
 
 class Tag(NamedAPIObject):
-    def __str__(self):
-        return f"Tag '{self.name}' ({self.obj_id})"
+    pass
 
-class TimeEntry(APIObject):
+class TimeEntry(APIObjectID):
 
-    def __init__(self, obj_id, start, description='', project=None, end=None):
+    def __init__(self, obj_id, start, user, description='', project=None, task=None, tags=None, end=None):
         """
-
         Parameters
         ----------
         obj_id: str
@@ -249,9 +325,15 @@ class TimeEntry(APIObject):
         """
         super().__init__(obj_id=obj_id)
         self.start = start
+        self.user = user
         self.description = description
         self.project = project
+        self.task = task
+        self.tags = tags
         self.end = end
+
+    def __str__(self):
+        return super().__str__() + f"- '{self.truncate(self.description)}'"
 
     @staticmethod
     def truncate(msg, length=30):
@@ -260,29 +342,32 @@ class TimeEntry(APIObject):
         else:
             return msg
 
-    def __str__(self):
-        return f"TimeEntry ({self.obj_id}) - '{self.truncate(self.description)}'"
-
     @classmethod
     def init_from_dict(cls, dict_in):
         # required parameters
         interval = cls.get_item(dict_in, 'timeInterval')
         obj_id = cls.get_item(dict_in=dict_in, key='id')
         start = cls.get_datetime(dict_in=interval, key='start')
+        user_id = cls.get_item(dict_in=dict_in, key='userId', raise_error=False)
+        user = APIObjectID(obj_id=user_id)
 
         # optional parameters
         description = cls.get_item(dict_in=dict_in, key='description', raise_error=False)
         project_id = cls.get_item(dict_in=dict_in, key='projectId', raise_error=False)
-        if project_id:
-            project = ProjectStub(obj_id=project_id)
-        else:
-            project = None
+        project = APIObjectID(obj_id=project_id) if project_id else None
+        task_id = cls.get_item(dict_in=dict_in, key='taskId', raise_error=False)
+        task = APIObjectID(obj_id=task_id) if task_id else None
+        tag_ids = cls.get_item(dict_in=dict_in, key='tagIds', raise_error=False)
+        tags = [APIObjectID(obj_id=t_i) for t_i in tag_ids] if tag_ids else None
         end = cls.get_datetime(dict_in=interval, key='end', raise_error=False)
 
         return cls(obj_id=obj_id,
                    start=start,
                    description=description,
+                   user=user,
                    project=project,
+                   task=task,
+                   tags=tags,
                    end=end
                    )
 
@@ -290,13 +375,17 @@ class TimeEntry(APIObject):
         """As dict that can be sent to API"""
         as_dict = {"id": self.obj_id,
                    "start": str(ClockifyDatetime(self.start)),
-                   "description": self.description
+                   "description": self.description,
+                   "userId": self.user.obj_id
                    }
         if self.end:
             as_dict["end"] = str(ClockifyDatetime(self.end))
         if self.project:
             as_dict["projectId"] = self.project.obj_id
-
+        if self.task:
+            as_dict["taskId"] = self.task.obj_id
+        if self.tags:
+            as_dict["tagIds"] = [t.obj_id for t in tags]
         return {x: y for x, y in as_dict.items() if y}  # remove items with None value
 
 

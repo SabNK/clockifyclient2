@@ -111,7 +111,7 @@ class ClockifyMockResponses:
                 "id": "5e5b8b0a95ae537fbde06e2f",
                 "name": "Lewis Carroll's workspace",
                 "hourlyRate": {
-                    "amount": 0,
+                    "amount": 99,
                     "currency": "USD"
                 },
                 "memberships": [
@@ -234,7 +234,10 @@ class ClockifyMockResponses:
                 "memberships": [
                     {
                         "userId": "5e5b8b0a95ae537fbde06e2e",
-                        "hourlyRate": null,
+                        "hourlyRate": {
+                            "amount": 99,
+                            "currency": "USD"
+                        },
                         "targetId": "5e5b8b0a95ae537fbde06e2f",
                         "membershipType": "WORKSPACE",
                         "membershipStatus": "ACTIVE"
@@ -255,7 +258,10 @@ class ClockifyMockResponses:
                     },
                     {
                         "userId": "5e5b8b0a95ae537fbde06e2e",
-                        "hourlyRate": null,
+                        "hourlyRate": {
+                            "amount": 122,
+                            "currency": "RUR"
+                        },
                         "targetId": "5e5b9f0195ae537fbde078bc",
                         "membershipType": "PROJECT",
                         "membershipStatus": "ACTIVE"
@@ -507,7 +513,7 @@ class ClockifyMockResponses:
                 "id": "5e5b9c7995ae537fbde0778c",
                 "name": "Down the Rabbit Hole",
                 "hourlyRate": {
-                    "amount": 0,
+                    "amount": 35,
                     "currency": "GBP"
                 },
                 "clientId": "",
@@ -523,14 +529,20 @@ class ClockifyMockResponses:
                     },
                     {
                         "userId": "5e5b91837df81c0df5f29609",
-                        "hourlyRate": null,
+                        "hourlyRate": {
+                            "amount": 75,
+                            "currency": "CHF"
+                        },
                         "targetId": "5e5b9c7995ae537fbde0778c",
                         "membershipType": "PROJECT",
                         "membershipStatus": "ACTIVE"
                     },
                     {
                         "userId": "5e5b9d2e95ae537fbde077e4",
-                        "hourlyRate": null,
+                        "hourlyRate": {
+                            "amount": 85,
+                            "currency": "GBP"
+                        },
                         "targetId": "5e5b9c7995ae537fbde0778c",
                         "membershipType": "PROJECT",
                         "membershipStatus": "ACTIVE"
@@ -628,6 +640,18 @@ class ClockifyMockResponses:
                 "id": "5e6381bbea0d47492eb35e0c",
                 "name": "test3",
                 "workspaceId": "5e5b8b3a95ae537fbde06e58",
+                "archived": false
+            }
+        ] """,
+        200
+    )
+    # calling /workspaces/<workspace id>/clients
+    GET_CLIENTS = RequestMockResponse(
+        """ [
+            {
+                "id": "5e654fc62fe7db4da05e7958",
+                "name": "Читатель",
+                "workspaceId": "5e64e36443f3817e058c24d7",
                 "archived": false
             }
         ] """,

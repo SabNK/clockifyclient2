@@ -3,7 +3,9 @@ import datetime
 
 from tests.factories import RequestsMock
 from pytest import fixture
-
+from clockifyclient.models import \
+    APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+    TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 
 @fixture
 def mock_requests(monkeypatch):
@@ -21,3 +23,11 @@ def mock_requests(monkeypatch):
 @fixture()
 def a_date():
     return datetime.datetime(year=2000, month=1, day=1)
+
+@fixture()
+def an_api_object_id():
+    return APIObjectID(obj_id='123')
+
+@fixture()
+def an_hourly_rate():
+    return HourlyRate(amount=100, currency='USD')

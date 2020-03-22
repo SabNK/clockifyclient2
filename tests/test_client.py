@@ -7,7 +7,8 @@ import pytest
 
 from clockifyclient.api import APIServer, APIServerException, APIErrorResponse
 from clockifyclient.client import ClockifyAPI, APISession
-from clockifyclient.models import TimeEntry, ProjectStub, Project, Workspace, User
+from clockifyclient.models import APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+    TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 from tests.factories import ClockifyMockResponses
 
 
@@ -17,8 +18,12 @@ def a_server():
 
 
 @pytest.fixture()
-def a_project():
-    return Project(obj_id='1234', name='testproject')
+def a_project(an_api_object_id, an_hourly_rate):
+    return Project(obj_id='1234',
+                   name='testproject',
+                   client=an_api_object_id,
+                   hourly_rates={an_api_object_id: an_hourly_rate}
+                   )
 
 @pytest.fixture()
 def a_task():
@@ -26,21 +31,26 @@ def a_task():
 
 
 @pytest.fixture()
-def a_workspace():
-    return Workspace(obj_id='123235', name='testworkspace')
+def a_workspace(an_hourly_rate):
+    return Workspace(obj_id='123235', name='testworkspace', hourly_rate=an_hourly_rate)
 
 @pytest.fixture()
 def a_tag():
     return Tag(obj_id='123235', name='testtag')
 
 
-@pytest.fixture()
-def a_user():
-    return User(obj_id='1232356', name='testuser', email='test_user@mail.ru')
 
 @pytest.fixture()
-def an_hourly_rate():
-    return HourlyRate(amount=1000.90, currency='RUR')
+def a_user(an_api_object_id, an_hourly_rate):
+    return User(obj_id='1232356',
+                name='testuser',
+                email='test_user@mail.ru',
+                hourly_rates={an_api_object_id: an_hourly_rate}
+                )
+
+@pytest.fixture()
+def an_hourly_rate_2():
+    return HourlyRate( currency='RUR', amount=1000.90)
 
 
 @pytest.fixture()
@@ -59,21 +69,17 @@ def a_time_entry(a_project):
 
 @pytest.fixture()
 def a_mock_api(mock_requests, an_api, a_project, a_user, a_workspace, a_time_entry):
-    """A ClockifyAPI that just returns default objects for all methods, not calling any server
-
-    """
-
+    """A ClockifyAPI that just returns default objects for all methods, not calling any server"""
     mock_api = Mock(spec=ClockifyAPI)
     mock_api.get_projects.return_value = [a_project]
     mock_api.get_user.return_value = a_user
     mock_api.get_users.return_value = [a_user]
     mock_api.get_workspaces.return_value = [a_workspace]
     mock_api.get_tags.return_value = [a_tag]
-    mack_api.get_tasks.return_value = [a_task]
+    mock_api.get_tasks.return_value = [a_task]
     mock_api.add_time_entry.return_value = a_time_entry
     mock_api.set_active_time_entry_end.return_value = a_time_entry
     return mock_api
-
 
 def test_api_calls_get(mock_requests, an_api):
     """Some regular calls to api should yield correct python objects """
@@ -81,13 +87,19 @@ def test_api_calls_get(mock_requests, an_api):
     workspaces = an_api.get_workspaces(api_key='mock_key')
     assert len(workspaces) == 2
     assert workspaces[0].obj_id == "5e5b8b0a95ae537fbde06e2f"
-    assert workspaces[0].name == "Lewis Carroll's workspace"
+    assert workspaces[1].name == "Alice in Wonderland"
+    assert workspaces[0].hourly_rate.amount == 99
+    assert workspaces[1].hourly_rate.currency == "GBP"
 
+    #TODO update factories with real hourlyRates
     mock_requests.set_response(ClockifyMockResponses.GET_USER)
     user = an_api.get_user(api_key='mock_key')
     assert user.obj_id == "5e5b8b0a95ae537fbde06e2e"
     assert user.name == "Lewis Carroll"
     assert user.email == "lewis_carroll_1832@mail.ru"
+    assert APIObjectID(obj_id="5e5b8b0a95ae537fbde06e2f") in user.hourly_rates.keys()
+    assert APIObjectID(obj_id="5e5b9f0195ae537fbde078bc") in user.hourly_rates.keys()
+    assert user.hourly_rates[APIObjectID(obj_id="5e5b9f0195ae537fbde078bc")].currency == "RUR"
 
     mock_requests.set_response(ClockifyMockResponses.GET_USERS)
     users = an_api.get_users(api_key='mock_key', workspace=workspaces[1])
@@ -101,6 +113,10 @@ def test_api_calls_get(mock_requests, an_api):
     assert len(projects) == 2
     assert projects[0].name == "Down the Rabbit Hole"
     assert projects[1].obj_id == "5e5b9f0195ae537fbde078bc"
+    assert APIObjectID(obj_id="5e5b9c7995ae537fbde0778c") in projects[0].hourly_rates.keys()
+    assert projects[0].hourly_rates[projects[0]].amount == 35
+    assert users[0] in projects[0].hourly_rates.keys()
+    assert projects[0].hourly_rates[users[0]].amount == 75
 
     mock_requests.set_response(ClockifyMockResponses.GET_TASKS)
     tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project = projects[0])
@@ -115,7 +131,11 @@ def test_api_calls_get(mock_requests, an_api):
     assert tags[1].obj_id == "5e6381b72fe7db4da05dea37"
     assert tags[2].name == "test3"
 
-
+    mock_requests.set_response(ClockifyMockResponses.GET_CLIENTS)
+    clients = an_api.get_clients(api_key='mock_key', workspace=workspaces[1])
+    assert len(clients) == 1
+    assert clients[0].name == "Читатель"
+    assert clients[0].obj_id == "5e654fc62fe7db4da05e7958"
 
 def test_api_add_time_entry(mock_requests, an_api, a_workspace, a_time_entry):
     mock_requests.set_response(ClockifyMockResponses.POST_TIME_ENTRY)

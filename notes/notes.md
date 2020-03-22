@@ -1,9 +1,14 @@
 ###### Plan for development
-Add User specific attributes:
-    Update User operations wih new attributes
-    Update Tests
-Add class HourlyRate in models:
-    Add Tests
+Add Clockify APIObjects
+    Client
+    Tag
+    Task
+    UserGroup
+    НourlyRate
+Modify User
+    Add User specific attributes:
+        Update User operations wih new attributes
+        Update Tests
 Populate Users from workspace (add_users)
     Add Tests
         factories
@@ -14,4 +19,7 @@ Add Task
 Init tasks from dict
 Exceptions
     Exception HourlyRate >=0
-
+APIObject add functionality hashable to add hourly rates in dict with project as a key
+    __eq__
+    __ne__
+    __hash__
