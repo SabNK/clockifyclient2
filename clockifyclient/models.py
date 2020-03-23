@@ -262,6 +262,8 @@ class User(NamedAPIObject):
     def get_hourly_rate(self, workspace, project):
         if project in self.hourly_rates.keys() and self.hourly_rates[project]:
             return self.hourly_rates[project]
+        elif project in project.hourly_rates.keys() and project.hourly_rates[project]:
+            return project.hourly_rates[project]
         elif workspace in self.hourly_rates.keys() and self.hourly_rates[workspace]:
             return self.hourly_rates[workspace]
         else:
@@ -292,7 +294,7 @@ class Project(NamedAPIObject):
             return self.hourly_rates[user]
         elif self in self.hourly_rates.keys() and self.hourly_rates[self]:
             return self.hourly_rates[self]
-        elif workspace in self.hourly_rates.keys() and self.hourly_rates[workspace]:
+        elif workspace in user.hourly_rates.keys() and user.hourly_rates[workspace]:
             return user.hourly_rates[workspace]
         else:
             return workspace.hourly_rate

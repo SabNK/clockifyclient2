@@ -100,25 +100,51 @@ def test_str(a_date, an_hourly_rate, an_api_object_id):
 
 #TODO try to use pytest fixtures
 def test_get_hourly_rate(an_api_object_id, an_hourly_rate):
-    an_api_object_id = APIObjectID(obj_id='123')
-    alter_api_object_id = APIObjectID(obj_id='456')
-    hourly_rate_1 = HourlyRate(amount=100, currency='USD')
-    hourly_rate_2 = HourlyRate(amount=99, currency='GBP')
-    hourly_rate_3 = HourlyRate(amount=98, currency='RUR')
-    hourly_rates_1 = {an_api_object_id: hourly_rate_1}
-    hourly_rates_2 = {alter_api_object_id: hourly_rate_2}
+    api_123 = APIObjectID(obj_id='123')
+    api_456 = APIObjectID(obj_id='456')
+    api_789 = APIObjectID(obj_id='789')
+    h_rate_10USD = HourlyRate(amount=10, currency='USD')
+    h_rate_99GBP = HourlyRate(amount=99, currency='GBP')
+    h_rate_51RUR = HourlyRate(amount=51, currency='RUR')
+    h_rate_66CHF = HourlyRate(amount=66, currency='CHF')
+    rates_123_10USD = {api_123: h_rate_10USD}
+    rates_456_99GBP = {api_456: h_rate_99GBP}
+    rates_789_66CHF = {api_789: h_rate_66CHF}
 
-    user_1 = User('123', 'Lenin', 'lenin@mail.ru', hourly_rates_1)
-    user_2 = User('357', 'Stalin', 'stalin@mail.ru', hourly_rates_1)
-    project = Project('456', 'Revolution', an_api_object_id, hourly_rates_1)
-    a_workspace = Workspace('789', "Russia'1917", hourly_rate_3)
-    user_hourly_rate = user_1.get_hourly_rate(a_workspace, project)
-    project_hourly_rate = project.get_hourly_rate(a_workspace, user_1)
-    assert user_hourly_rate.amount == 98
+    #case #1 user has hourly_rate on project
+    user = User('123', 'name', 'email', rates_123_10USD)
+    project = Project('123', 'name', an_api_object_id, rates_123_10USD)
+    workspace = Workspace('789', 'name', h_rate_51RUR)
+
+    user_hourly_rate = user.get_hourly_rate(workspace, project)
+    project_hourly_rate = project.get_hourly_rate(workspace, user)
+    assert user_hourly_rate.amount == 10
     assert project_hourly_rate.currency == 'USD'
-    project = Project('456', 'Revolution', an_api_object_id, hourly_rates_2)
-    project_hourly_rate = project.get_hourly_rate(a_workspace, user_2)
+
+    #case #2 user has no hourly_rate on project but project has default hourly_rate
+    project.obj_id = '456'
+    project.hourly_rates = rates_456_99GBP
+
+    user_hourly_rate = user.get_hourly_rate(workspace, project)
+    project_hourly_rate = project.get_hourly_rate(workspace, user)
+    assert user_hourly_rate.amount == 99
     assert project_hourly_rate.currency == 'GBP'
+
+    # case #3 user has no hourly_rate on project, project has no default hourly_rate, but user on workspace has
+    user.hourly_rates = user.hourly_rates.copy()
+    user.hourly_rates.update(rates_789_66CHF)
+    project.hourly_rates = {}
+    user_hourly_rate = user.get_hourly_rate(workspace, project)
+    project_hourly_rate = project.get_hourly_rate(workspace, user)
+    assert user_hourly_rate.amount == 66
+    assert project_hourly_rate.currency == 'CHF'
+
+    # case #4 user and projects has no appropriate hourly_rate, use default workspace hourly_rate
+    user.hourly_rates = rates_123_10USD
+    user_hourly_rate = user.get_hourly_rate(workspace, project)
+    project_hourly_rate = project.get_hourly_rate(workspace, user)
+    assert user_hourly_rate.amount == 51
+    assert project_hourly_rate.currency == 'RUR'
 
 def test_truncate(a_date):
     entry = TimeEntry(obj_id='123', start=a_date, user=APIObjectID(obj_id='123'))
