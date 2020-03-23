@@ -32,6 +32,10 @@ class APISession:
         return self.api.get_workspaces(api_key=self.api_key)[0]
 
     @lru_cache()
+    def get_workspaces(self):
+        return self.api.get_workspaces(api_key=self.api_key)
+
+    @lru_cache()
     def get_user(self):
         return self.api.get_user(api_key=self.api_key)
 
@@ -44,12 +48,24 @@ class APISession:
         return self.api.get_projects(api_key=self.api_key,workspace=workspace)
 
     @lru_cache()
+    def get_clients(self, workspace):
+        return self.api.get_clients(api_key=self.api_key, workspace=workspace)
+
+    @lru_cache()
     def get_tasks(self, workspace, project):
         return self.api.get_tasks(api_key=self.api_key, workspace=workspace, project=project)
 
     @lru_cache()
     def get_tags(self, workspace):
         return self.api.get_tags(api_key=self.api_key, workspace=workspace)
+
+    @lru_cache()
+    def get_time_entries(self, workspace, user, start_datetime, end_datetime):
+        return self.api.get_time_entries(api_key=self.api_key,
+                                         workspace=workspace,
+                                         user=user,
+                                         start_datetime=start_datetime,
+                                         end_datetime=end_datetime)
 
     def add_time_entry_object(self, time_entry: TimeEntry):
         """Add the given time entry to the default workspace
@@ -69,7 +85,7 @@ class APISession:
                                        workspace=self.get_default_workspace(),
                                        time_entry=time_entry)
 
-    def add_time_entry(self, start_time, end_time=None, description=None, project=None):
+    def add_time_entry(self, start_time, user=None, end_time=None, description=None, project=None):
         """Add a time entry to default workspace. If no end time is given stopwatch mode is activated.
 
         This will stop any previously running stopwatch
@@ -94,6 +110,7 @@ class APISession:
         time_entry = TimeEntry(obj_id=None,
                                start=start_time,
                                description=description,
+                               user=user,
                                project=project,
                                end=end_time)
 
@@ -178,7 +195,6 @@ class ClockifyAPI:
         Returns
         -------
         User
-
         """
         response = self.api_server.get(path="/user", api_key=api_key)
         return User.init_from_dict(response)
@@ -196,7 +212,6 @@ class ClockifyAPI:
         Returns
         -------
         List[User]
-
         """
         response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
         return [User.init_from_dict(x) for x in response]
@@ -282,32 +297,15 @@ class ClockifyAPI:
         )
         return [Tag.init_from_dict(x) for x in response]
 
-    """def get_projects_on_users(self, api_key, workspace, users, projects):
-
-    def get_users_projects_rates(self, api_key, workspace):
-        response_workspaces = self.api_server.get(path="/workspaces", api_key=api_key)
-        for r_w in response_workspaces:
-            if Workspace.init_from_dict(r_w) == workspace:
-                workspace_hourly_rate = HourlyRate.init_from_dict(r_w)
-        response_users = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
-        response_projects = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/projects", api_key=api_key)
-        usergroups = {}
-        hourly_rates_project_stub = {}
-        for r_u in response_users:
-            for membership in r_u['memberships']:
-                if membership['membershipType'] == "WORKSPACE":
-                    user.default_hourly_rates[workspace] = HourlyRate.init_from_dict(membership)
-                elif membership['membershipType'] == "PROJECT":
-                        user.hourly_rates[filter(lambda p: p.obj_id == membership['targetId'], projects)[0]] = HourlyRate.init_from_dict(membership)
-                    elif membership['membershipType'] == "USERGROUP":
-                    for r_p in response_projects:
-                        project = [x for x in users if x==Project.init_from_dict(r_p)][0]
-                        if project is not None:
-
-
-
-        return workspace_hourly_rate"""
-
+    def get_time_entries(self, api_key: str, workspace: Workspace, user: User,
+                         start_datetime, end_datetime):
+        params = {'start': ClockifyDatetime(start_datetime).clockify_datetime,
+                  'end': ClockifyDatetime(end_datetime).clockify_datetime}
+        response = self.api_server.get(
+            path=f"/workspaces/{workspace.obj_id}/user/{user.obj_id}/time-entries",
+            api_key=api_key,
+            params=params)
+        return [TimeEntry.init_from_dict(te) for te in response]
 
     def add_time_entry(self, api_key: str, workspace: Workspace, time_entry: TimeEntry):
         """

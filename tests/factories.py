@@ -101,10 +101,10 @@ class ClockifyMockResponses:
     # Trying to set something on
     CURRENTLY_RUNNING_ENTRY_NOT_FOUND = RequestMockResponse(
         """{"message":"Currently running time entry doesn't exist on workspace 123456 for user 123456.","code":404}""",
-        404
-    )
+        404)
 
     # calling get /workspaces
+    # TODO replace with final version of hourly rates from Alice
     GET_WORKSPACES = RequestMockResponse(
         """ [
             {
@@ -220,9 +220,7 @@ class ClockifyMockResponses:
                 "imageUrl": "https://img.clockify.me/2020-03-01T11%3A07%3A16.041ZIn+Wonderland.jpg",
                 "featureSubscriptionType": null
             }
-        ] """,
-        200
-    )
+        ] """, 200)
 
     # calling get /user
     GET_USER = RequestMockResponse(
@@ -294,10 +292,10 @@ class ClockifyMockResponses:
                 },
                 "status": "ACTIVE"
             }
-        """,
-        200
-    )
+        """, 200)
+
     # calling get /workspaces/<workspace id>/users
+    # TODO replace with final version of hourly rates from Alice
     GET_USERS = RequestMockResponse(
         """ [
             {
@@ -502,11 +500,10 @@ class ClockifyMockResponses:
                 },
                 "status": "ACTIVE"
             }
-        ] """,
-        200
-    )
+        ] """, 200)
 
     # calling /workspaces/<workspace id>/projects
+    # TODO replace with final version of hourly rates from Alice
     GET_PROJECTS = RequestMockResponse(
         """ [
             {
@@ -591,9 +588,8 @@ class ClockifyMockResponses:
                 "template": false,
                 "public": false
             }
-        ] """,
-        200
-    )
+        ] """, 200)
+
     # calling /workspaces/<workspace id>/projects/<project id>/tasks
     GET_TASKS = RequestMockResponse(
         """ [
@@ -617,11 +613,10 @@ class ClockifyMockResponses:
                 "status": "ACTIVE",
                 "duration": "PT0S"
             }
-        ]  """,
-        200
-    )
+        ]  """, 200)
 
     # calling /workspaces/<workspace id>/tags
+    # TODO replace with final version of tags in Alice
     GET_TAGS = RequestMockResponse(
         """ [
             {
@@ -642,10 +637,10 @@ class ClockifyMockResponses:
                 "workspaceId": "5e5b8b3a95ae537fbde06e58",
                 "archived": false
             }
-        ] """,
-        200
-    )
+        ] """, 200)
+
     # calling /workspaces/<workspace id>/clients
+    # TODO replace with English version of Alice
     GET_CLIENTS = RequestMockResponse(
         """ [
             {
@@ -654,10 +649,70 @@ class ClockifyMockResponses:
                 "workspaceId": "5e64e36443f3817e058c24d7",
                 "archived": false
             }
-        ] """,
-        200
-    )
+        ] """, 200)
 
+    # calling /workspaces/<workspace id>/user/<user id>/time-entries
+    #TODO replace with English version of Alice
+    GET_TIME_ENTRIES = RequestMockResponse(
+        """ [
+            {
+                "id": "5e6542032fe7db4da05e734a",
+                "description": "Подошла к закрытой дверце и поняла что забыла ключ",
+                "tagIds": [
+                    "5e6549d7ea0d47492eb3eaa2"
+                ],
+                "userId": "5e64e65643f3817e058c261a",
+                "billable": true,
+                "taskId": "5e64f85f43f3817e058c2d50",
+                "projectId": "5e64f6804aa5d3718482d06b",
+                "timeInterval": {
+                    "start": "2020-03-08T19:30:00Z",
+                    "end": "2020-03-08T20:00:00Z",
+                    "duration": "PT30M"
+                },
+                "workspaceId": "5e64e36443f3817e058c24d7",
+                "isLocked": false,
+                "customFieldValues": []
+            },
+            {
+                "id": "5e65412343f3817e058c4e06",
+                "description": "Пыталась поместиться в нору",
+                "tagIds": [
+                    "5e6549d7ea0d47492eb3eaa2"
+                ],
+                "userId": "5e64e65643f3817e058c261a",
+                "billable": true,
+                "taskId": "5e64f7ef43f3817e058c2d29",
+                "projectId": "5e64f6804aa5d3718482d06b",
+                "timeInterval": {
+                    "start": "2020-03-08T18:30:00Z",
+                    "end": "2020-03-08T19:00:00Z",
+                    "duration": "PT30M"
+                },
+                "workspaceId": "5e64e36443f3817e058c24d7",
+                "isLocked": false,
+                "customFieldValues": []
+            },
+            {
+                "id": "5e654100ea0d47492eb3e6a1",
+                "description": "Открывала маленькую дверь в сад золотым ключиком",
+                "tagIds": [
+                    "5e6549d7ea0d47492eb3eaa2"
+                ],
+                "userId": "5e64e65643f3817e058c261a",
+                "billable": true,
+                "taskId": "5e64f7ef43f3817e058c2d29",
+                "projectId": "5e64f6804aa5d3718482d06b",
+                "timeInterval": {
+                    "start": "2020-03-08T18:00:00Z",
+                    "end": "2020-03-08T18:30:00Z",
+                    "duration": "PT30M"
+                },
+                "workspaceId": "5e64e36443f3817e058c24d7",
+                "isLocked": false,
+                "customFieldValues": []
+            }
+        ] """, 200)
 
     # calling post '/workspaces/<workspace id>/time-entries'
     POST_TIME_ENTRY = RequestMockResponse(

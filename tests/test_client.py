@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import datetime
+from dateutil.tz import tzutc, tzlocal
 from unittest.mock import Mock
 
 import pytest
@@ -29,7 +30,6 @@ def a_project(an_api_object_id, an_hourly_rate):
 def a_task():
     return Task(obj_id='123235', name='testtask')
 
-
 @pytest.fixture()
 def a_workspace(an_hourly_rate):
     return Workspace(obj_id='123235', name='testworkspace', hourly_rate=an_hourly_rate)
@@ -37,8 +37,6 @@ def a_workspace(an_hourly_rate):
 @pytest.fixture()
 def a_tag():
     return Tag(obj_id='123235', name='testtag')
-
-
 
 @pytest.fixture()
 def a_user(an_api_object_id, an_hourly_rate):
@@ -52,20 +50,21 @@ def a_user(an_api_object_id, an_hourly_rate):
 def an_hourly_rate_2():
     return HourlyRate( currency='RUR', amount=1000.90)
 
-
 @pytest.fixture()
 def an_api(a_server):
     return ClockifyAPI(api_server=a_server)
 
-
-
 @pytest.fixture()
 def a_time_entry(a_project):
+    api_123 = APIObjectID(obj_id='123')
+    h_rate_10USD = HourlyRate(amount=10, currency='USD')
+    rates_123_10USD = {api_123: h_rate_10USD}
+    a_user = User('123', 'name', 'email', rates_123_10USD)
     return TimeEntry(obj_id=None,
                      start=datetime.datetime(year=2019, month=10, day=12, hour=14, minute=10, second=1),
                      description='test description',
-                     project=a_project)
-
+                     project=a_project,
+                     user=a_user)
 
 @pytest.fixture()
 def a_mock_api(mock_requests, an_api, a_project, a_user, a_workspace, a_time_entry):
@@ -81,7 +80,7 @@ def a_mock_api(mock_requests, an_api, a_project, a_user, a_workspace, a_time_ent
     mock_api.set_active_time_entry_end.return_value = a_time_entry
     return mock_api
 
-def test_api_calls_get(mock_requests, an_api):
+def test_api_calls_get(mock_requests, an_api, a_date):
     """Some regular calls to api should yield correct python objects """
     mock_requests.set_response(ClockifyMockResponses.GET_WORKSPACES)
     workspaces = an_api.get_workspaces(api_key='mock_key')
@@ -136,6 +135,18 @@ def test_api_calls_get(mock_requests, an_api):
     assert len(clients) == 1
     assert clients[0].name == "Читатель"
     assert clients[0].obj_id == "5e654fc62fe7db4da05e7958"
+
+    # TODO add more asserts to get_time_entries
+    mock_requests.set_response(ClockifyMockResponses.GET_TIME_ENTRIES)
+    time_entries = an_api.get_time_entries(api_key='mock_key',
+                                           workspace=workspaces[0],
+                                           user=users[0],
+                                           start_datetime=a_date,
+                                           end_datetime=a_date)
+    assert len(time_entries) == 3
+    assert time_entries[0].description.endswith("ключ")
+    assert time_entries[2].end == \
+           datetime.datetime(2020, 3, 8, hour=18, minute=30, tzinfo=tzutc())
 
 def test_api_add_time_entry(mock_requests, an_api, a_workspace, a_time_entry):
     mock_requests.set_response(ClockifyMockResponses.POST_TIME_ENTRY)

@@ -1,4 +1,4 @@
-""" Models the objects with which the clockify API works. One level above json dicts.
+""" Models the objects with which the clockify API works.
 Models as simply as possible, omitting any fields not used by this package
 """
 from abc import abstractmethod
@@ -8,7 +8,6 @@ import dateutil
 import dateutil.parser as date_parser
 
 from clockifyclient.exceptions import ClockifyClientException
-
 
 class ClockifyDatetime:
     """For converting between python datetime and clockify datetime string
@@ -53,7 +52,7 @@ class ClockifyDatetime:
         return self.clockify_datetime
 
 class APIObject:
-    """An object that is used in the clockify API and can be intiated from API response"""
+    """An root for objects that is used in the clockify API and can be intiated from API response"""
 
     def __str__(self):
         return f"{self.__class__.__name__} "
@@ -88,7 +87,8 @@ class APIObject:
             return dict_in[key]
         except KeyError:
             msg = f"Could not find key '{key}' in '{dict_in}'"
-            raise ObjectParseException(msg)
+            if raise_error:
+                raise ObjectParseException(msg)
 
     @classmethod
     def get_datetime(cls, dict_in, key, raise_error=True):
@@ -161,7 +161,7 @@ class HourlyRate(APIObject):
                    currency=cls.get_item(cls.get_item(dict_in=dict_in, key='hourlyRate'), key='currency'))
 
 class APIObjectID(APIObject):
-    """An object that can be returned by the clockify API, has its ID"""
+    """An object that can be returned by the clockify API, has its ID, one level above json dicts."""
     def __init__(self, obj_id):
         """
         Parameters
@@ -188,26 +188,22 @@ class APIObjectID(APIObject):
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'))
 
 class UserGroup(APIObjectID):
-    """Group of Users - is used to assign multi[le users to project"""
+    """Group of Users - is used to assign multi[le users to project
+    TO DO: implement class
+    """
 
-    def __init__(self, obj_id):
+    def __init__(self, obj_id, users):
         super().__init__(obj_id=obj_id)
-        self.users = []
+        self.users = users
 
     @classmethod
     def init_from_dict(cls, dict_in):
-
-        for membership in cls.get_item(dict_in=dict_in, key='memberships'):
-            if membership['membershipType'] == "USERGROUP":
-                target_id = membership['targetId']
-                return cls(obj_id=target_id)
-
+        pass
 
 class NamedAPIObject(APIObjectID):
     """An object of clockify API, with name and ID"""
     def __init__(self, obj_id, name):
         """
-
         Parameters
         ----------
         obj_id: str
@@ -227,7 +223,6 @@ class NamedAPIObject(APIObjectID):
             name=cls.get_item(dict_in=dict_in, key='name'))
 
 class Workspace(NamedAPIObject):
-
     def __init__(self, obj_id, name, hourly_rate):
         super().__init__(obj_id=obj_id, name=name)
         self.hourly_rate = hourly_rate
@@ -389,7 +384,6 @@ class TimeEntry(APIObjectID):
         if self.tags:
             as_dict["tagIds"] = [t.obj_id for t in tags]
         return {x: y for x, y in as_dict.items() if y}  # remove items with None value
-
 
 class ObjectParseException(ClockifyClientException):
     pass
