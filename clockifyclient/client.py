@@ -324,8 +324,8 @@ class ClockifyAPI:
         if projects_with_tasks:
             projects_dict = {project: project for project in projects_with_tasks.keys()}
             tasks_dict = {}
-            for project in projects_with_tasks.keys()
-                tasks_dict.update{task: task for task in projects_with_tasks[project]}
+            for project in projects_with_tasks.keys():
+                tasks_dict.update({task: task for task in projects_with_tasks[project]})
         if tags:
             tags_dict = {tag: tag for tag in tags}
         modified_time_entries = []
@@ -339,7 +339,7 @@ class ClockifyAPI:
             if tags and time_entry.tags:
                 t_e_tags = []
                 for tag in time_entry.tags:
-                    if tag.__hash__() in [t_e_t.__hash()__ for tet in time_entry.tags]:
+                    if tag.__hash__() in [t_e_t.__hash__() for t_e_t in time_entry.tags]:
                         t_e_tags.append(tags_dict[tag])
                 time_entry.tags = t_e_tags
             modified_time_entries.append(time_entry)
