@@ -118,7 +118,7 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert projects[0].hourly_rates[users[0]].amount == 75
 
     mock_requests.set_response(ClockifyMockResponses.GET_TASKS)
-    tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project = projects[0])
+    tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project=projects[0])
     assert len(tasks) == 2
     assert tasks[0].name == "drink me"
     assert tasks[1].obj_id == "5e5ba91100352a1175bc90fa"
@@ -135,6 +135,9 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert len(clients) == 1
     assert clients[0].name == "Читатель"
     assert clients[0].obj_id == "5e654fc62fe7db4da05e7958"
+
+    # TODO test for projects_with_tasks
+    #projects_with_tasks = an_api
 
     # TODO add more asserts to get_time_entries
     mock_requests.set_response(ClockifyMockResponses.GET_TIME_ENTRIES)

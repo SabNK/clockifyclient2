@@ -68,7 +68,7 @@ class APISession:
         return self.api.get_tags(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
-    def get_projects_with_tasks(self, api_key, workspace):
+    def get_projects_with_tasks(self, workspace):
         projects = self.get_projects(workspace=workspace)
         projects_with_tasks = {}
         for project in projects:
