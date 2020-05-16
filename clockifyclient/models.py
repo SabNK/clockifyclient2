@@ -157,8 +157,12 @@ class HourlyRate(APIObject):
 
     @classmethod
     def init_from_dict(cls, dict_in):
-        return cls(amount=cls.get_item(cls.get_item(dict_in=dict_in, key='hourlyRate'), key='amount'),
-                   currency=cls.get_item(cls.get_item(dict_in=dict_in, key='hourlyRate'), key='currency'))
+        dict_hourlyRate = cls.get_item(dict_in=dict_in, key='hourlyRate')
+        if dict_hourlyRate:
+            return cls(amount=cls.get_item(dict_hourlyRate, key='amount'),
+                   currency=cls.get_item(dict_hourlyRate, key='currency'))
+        else:
+            return None
 
 class APIObjectID(APIObject):
     """An object that can be returned by the clockify API, has its ID, one level above json dicts."""

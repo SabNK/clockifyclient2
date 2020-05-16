@@ -560,10 +560,7 @@ class ClockifyMockResponses:
             {
                 "id": "5e5b9f0195ae537fbde078bc",
                 "name": "The Pool of Tears",
-                "hourlyRate": {
-                    "amount": 0,
-                    "currency": "GBP"
-                },
+                "hourlyRate": null,
                 "clientId": "",
                 "workspaceId": "5e5b8b3a95ae537fbde06e58",
                 "billable": true,
