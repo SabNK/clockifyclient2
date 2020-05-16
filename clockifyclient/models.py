@@ -250,8 +250,8 @@ class User(NamedAPIObject):
         hourly_rates = {}
         for membership in dict_in['memberships']:
             if membership['hourlyRate']:
-                hourly_rates[APIObjectID(cls.get_item(dict_in=membership, key='targetId'))] = \
-                    HourlyRate.init_from_dict(membership)
+                api_id_project_or_workspace = APIObjectID(cls.get_item(dict_in=membership, key='targetId'))
+                hourly_rates[api_id_project_or_workspace] = HourlyRate.init_from_dict(membership)
         return cls(obj_id=obj_id, name=name, email=email, hourly_rates=hourly_rates)
 
     def get_hourly_rate(self, workspace, project):
@@ -277,12 +277,14 @@ class Project(NamedAPIObject):
     def init_from_dict(cls, dict_in):
         obj_id = cls.get_item(dict_in=dict_in, key='id')
         name = cls.get_item(dict_in=dict_in, key='name')
-        client = APIObjectID(cls.get_item(dict_in=dict_in, key='clientId'))
-        hourly_rates = {APIObjectID(obj_id): HourlyRate.init_from_dict(dict_in)}
+        api_id_client = APIObjectID(cls.get_item(dict_in=dict_in, key='clientId'))
+        api_id_project = APIObjectID(obj_id)
+        hourly_rates = {api_id_project: HourlyRate.init_from_dict(dict_in)}
         for membership in dict_in['memberships']:
             if membership['hourlyRate']:
-                hourly_rates[APIObjectID(cls.get_item(dict_in=membership, key ='userId'))] = HourlyRate.init_from_dict(membership)
-        return cls(obj_id=obj_id, name=name, client=client, hourly_rates=hourly_rates)
+                api_id_user = APIObjectID(cls.get_item(dict_in=membership, key='userId'))
+                hourly_rates[api_id_user] = HourlyRate.init_from_dict(membership)
+        return cls(obj_id=obj_id, name=name, client=api_id_client, hourly_rates=hourly_rates)
 
     def get_hourly_rate(self, workspace, user):
         if user in self.hourly_rates.keys() and self.hourly_rates[user]:
@@ -334,7 +336,7 @@ class TimeEntry(APIObjectID):
 
     @staticmethod
     def truncate(msg, length=30):
-        if msg[(length):]:
+        if msg[length:]:
             return msg[:(length-3)] + "..."
         else:
             return msg
@@ -346,25 +348,25 @@ class TimeEntry(APIObjectID):
         obj_id = cls.get_item(dict_in=dict_in, key='id')
         start = cls.get_datetime(dict_in=interval, key='start')
         user_id = cls.get_item(dict_in=dict_in, key='userId', raise_error=False)
-        user = APIObjectID(obj_id=user_id)
+        api_id_user = APIObjectID(obj_id=user_id)
 
         # optional parameters
         description = cls.get_item(dict_in=dict_in, key='description', raise_error=False)
         project_id = cls.get_item(dict_in=dict_in, key='projectId', raise_error=False)
-        project = APIObjectID(obj_id=project_id) if project_id else None
+        api_id_project = APIObjectID(obj_id=project_id) if project_id else None
         task_id = cls.get_item(dict_in=dict_in, key='taskId', raise_error=False)
-        task = APIObjectID(obj_id=task_id) if task_id else None
+        api_id_task = APIObjectID(obj_id=task_id) if task_id else None
         tag_ids = cls.get_item(dict_in=dict_in, key='tagIds', raise_error=False)
-        tags = [APIObjectID(obj_id=t_i) for t_i in tag_ids] if tag_ids else None
+        api_id_tags = [APIObjectID(obj_id=t_i) for t_i in tag_ids] if tag_ids else None
         end = cls.get_datetime(dict_in=interval, key='end', raise_error=False)
 
         return cls(obj_id=obj_id,
                    start=start,
                    description=description,
-                   user=user,
-                   project=project,
-                   task=task,
-                   tags=tags,
+                   user=api_id_user,
+                   project=api_id_project,
+                   task=api_id_task,
+                   tags=api_id_tags,
                    end=end
                    )
 
@@ -382,7 +384,7 @@ class TimeEntry(APIObjectID):
         if self.task:
             as_dict["taskId"] = self.task.obj_id
         if self.tags:
-            as_dict["tagIds"] = [t.obj_id for t in tags]
+            as_dict["tagIds"] = [t.obj_id for t in self.tags]
         return {x: y for x, y in as_dict.items() if y}  # remove items with None value
 
 class ObjectParseException(ClockifyClientException):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
-
 from clockifyclient.api import APIServer, APIServer404
+from clockifyclient.decorators import request_rate_watchdog
 from clockifyclient.models import Workspace, User, Project, Task, TimeEntry, ClockifyDatetime, Tag, Client, HourlyRate
 from functools import lru_cache
 
@@ -28,38 +28,55 @@ class APISession:
         self.api = ClockifyAPI(api_server=api_server)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_default_workspace(self):
         return self.api.get_workspaces(api_key=self.api_key)[0]
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_workspaces(self):
         return self.api.get_workspaces(api_key=self.api_key)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_user(self):
         return self.api.get_user(api_key=self.api_key)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_users(self, workspace):
         return self.api.get_users(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_projects(self, workspace):
         return self.api.get_projects(api_key=self.api_key,workspace=workspace)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_clients(self, workspace):
         return self.api.get_clients(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_tasks(self, workspace, project):
         return self.api.get_tasks(api_key=self.api_key, workspace=workspace, project=project)
 
     @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_tags(self, workspace):
         return self.api.get_tags(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
+    def get_projects_with_tasks(self, api_key, workspace):
+        projects = self.get_projects(workspace=workspace)
+        projects_with_tasks = {}
+        for project in projects:
+            projects_with_tasks[project] = self.get_tasks(workspace=workspace, project=project)
+        return projects_with_tasks
+
+    @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def get_time_entries(self, workspace, user, start_datetime, end_datetime):
         return self.api.get_time_entries(api_key=self.api_key,
                                          workspace=workspace,
@@ -67,6 +84,7 @@ class APISession:
                                          start_datetime=start_datetime,
                                          end_datetime=end_datetime)
 
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def add_time_entry_object(self, time_entry: TimeEntry):
         """Add the given time entry to the default workspace
 
@@ -85,6 +103,7 @@ class APISession:
                                        workspace=self.get_default_workspace(),
                                        time_entry=time_entry)
 
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def add_time_entry(self, start_time, user=None, end_time=None, description=None, project=None):
         """Add a time entry to default workspace. If no end time is given stopwatch mode is activated.
 
@@ -116,6 +135,7 @@ class APISession:
 
         return self.add_time_entry_object(time_entry=time_entry)
 
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def stop_timer(self, stop_time=None):
         """Halt the current timer
 
@@ -296,6 +316,34 @@ class ClockifyAPI:
             path=f"/workspaces/{workspace.obj_id}/tags", api_key=api_key
         )
         return [Tag.init_from_dict(x) for x in response]
+
+    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks:{Project:[Task]}=None,
+                                   tags=None):
+        if users:
+            users_dict = {user: user for user in users}
+        if projects_with_tasks:
+            projects_dict = {project: project for project in projects_with_tasks.keys()}
+            tasks_dict = {}
+            for project in projects_with_tasks.keys()
+                tasks_dict.update{task: task for task in projects_with_tasks[project]}
+        if tags:
+            tags_dict = {tag: tag for tag in tags}
+        modified_time_entries = []
+        for time_entry in time_entries:
+            if users and time_entry.user in users_dict.keys():
+                time_entry.user = users_dict[time_entry.user]
+            if projects_with_tasks and time_entry.project in projects_dict.keys():
+                time_entry.project = projects_dict[time_entry.project]
+            if projects_with_tasks and time_entry.task in tasks_dict.keys():
+                time_entry.task = tasks_dict[time_entry.task]
+            if tags and time_entry.tags:
+                t_e_tags = []
+                for tag in time_entry.tags:
+                    if tag.__hash__() in [t_e_t.__hash()__ for tet in time_entry.tags]:
+                        t_e_tags.append(tags_dict[tag])
+                time_entry.tags = t_e_tags
+            modified_time_entries.append(time_entry)
+        return modified_time_entries
 
     def get_time_entries(self, api_key: str, workspace: Workspace, user: User,
                          start_datetime, end_datetime):
