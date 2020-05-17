@@ -159,7 +159,7 @@ class HourlyRate(APIObject):
     def init_from_dict(cls, dict_in):
         dict_hourlyRate = cls.get_item(dict_in=dict_in, key='hourlyRate')
         if dict_hourlyRate:
-            return cls(amount=cls.get_item(dict_hourlyRate, key='amount'),
+            return cls(amount=cls.get_item(dict_hourlyRate, key='amount')/100,
                    currency=cls.get_item(dict_hourlyRate, key='currency'))
         else:
             return None
