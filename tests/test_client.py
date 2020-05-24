@@ -89,6 +89,12 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert workspaces[1].name == "Alice in Wonderland"
     assert workspaces[0].hourly_rate.amount == 99
     assert workspaces[1].hourly_rate.currency == "GBP"
+    assert workspaces[0].forceProjects == False
+    assert workspaces[1].forceProjects == True
+    assert workspaces[0].forceTasks == False
+    assert workspaces[1].forceTasks == True
+    assert workspaces[0].forceTags == False
+    assert workspaces[1].forceTags == True
 
     #TODO update factories with real hourlyRates
     mock_requests.set_response(ClockifyMockResponses.GET_USER)

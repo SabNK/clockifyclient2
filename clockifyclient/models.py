@@ -175,8 +175,13 @@ class APIObjectID(APIObject):
         """
         self.obj_id = obj_id
 
+    """Some objects may be omitted in Clockify (the regulation is forceProjects, forceTasks, forceTags, so we introduce
+    comparison to None to __eq__ and __ne__ methods"""
     def __eq__(self, other):
-        return self.obj_id == other.obj_id
+        if other:
+            return self.obj_id == other.obj_id
+        else:
+            return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -227,15 +232,21 @@ class NamedAPIObject(APIObjectID):
             name=cls.get_item(dict_in=dict_in, key='name'))
 
 class Workspace(NamedAPIObject):
-    def __init__(self, obj_id, name, hourly_rate):
+    def __init__(self, obj_id, name, hourly_rate, forceProjects, forceTasks, forceTags):
         super().__init__(obj_id=obj_id, name=name)
         self.hourly_rate = hourly_rate
+        self.forceProjects = forceProjects
+        self.forceTasks = forceTasks
+        self.forceTags = forceTags
 
     @classmethod
     def init_from_dict(cls, dict_in):
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
                    name=cls.get_item(dict_in=dict_in, key='name'),
-                   hourly_rate=HourlyRate.init_from_dict(dict_in=dict_in))
+                   hourly_rate=HourlyRate.init_from_dict(dict_in=dict_in),
+                   forceProjects=cls.get_item(dict_in=dict_in, key='forceProjects'),
+                   forceTasks=cls.get_item(dict_in=dict_in, key='forceTasks'),
+                   forceTags=cls.get_item(dict_in=dict_in, key='forceTags'),)
 
 class User(NamedAPIObject):
     def __init__(self, obj_id, name, email, hourly_rates: {APIObjectID: HourlyRate}):

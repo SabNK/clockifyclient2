@@ -70,9 +70,12 @@ class APISession:
     @lru_cache()
     def get_projects_with_tasks(self, workspace):
         projects = self.get_projects(workspace=workspace)
-        projects_with_tasks = {}
+        projects_with_tasks = {} if workspace.forceProjects else {None: [None]}
         for project in projects:
-            projects_with_tasks[project] = self.get_tasks(workspace=workspace, project=project)
+            if workspace.forceTags:
+                projects_with_tasks[project] = self.get_tasks(workspace=workspace, project=project)
+            else:
+                projects_with_tasks[project] = [None] + self.get_tasks(workspace=workspace, project=project)
         return projects_with_tasks
 
     @lru_cache()
