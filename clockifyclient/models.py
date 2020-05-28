@@ -241,12 +241,13 @@ class Workspace(NamedAPIObject):
 
     @classmethod
     def init_from_dict(cls, dict_in):
+        dict_in_ws = dict_in['workspaceSettings']
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'),
                    name=cls.get_item(dict_in=dict_in, key='name'),
                    hourly_rate=HourlyRate.init_from_dict(dict_in=dict_in),
-                   forceProjects=cls.get_item(dict_in=dict_in, key='forceProjects'),
-                   forceTasks=cls.get_item(dict_in=dict_in, key='forceTasks'),
-                   forceTags=cls.get_item(dict_in=dict_in, key='forceTags'),)
+                   forceProjects=cls.get_item(dict_in=dict_in_ws, key='forceProjects'),
+                   forceTasks=cls.get_item(dict_in=dict_in_ws, key='forceTasks'),
+                   forceTags=cls.get_item(dict_in=dict_in_ws, key='forceTags'),)
 
 class User(NamedAPIObject):
     def __init__(self, obj_id, name, email, hourly_rates: {APIObjectID: HourlyRate}):
@@ -263,6 +264,7 @@ class User(NamedAPIObject):
         name = cls.get_item(dict_in=dict_in, key='name')
         email = cls.get_item(dict_in=dict_in, key='email')
         hourly_rates = {}
+        #TODO rewrite using get_item
         for membership in dict_in['memberships']:
             if membership['hourlyRate']:
                 api_id_project_or_workspace = APIObjectID(cls.get_item(dict_in=membership, key='targetId'))
