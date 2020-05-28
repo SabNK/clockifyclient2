@@ -1,6 +1,8 @@
 """ Models the objects with which the clockify API works.
 Models as simply as possible, omitting any fields not used by this package
+TODO complete class and methods documentation
 """
+
 from abc import abstractmethod
 import datetime
 
@@ -158,10 +160,12 @@ class HourlyRate(APIObject):
     @classmethod
     def init_from_dict(cls, dict_in):
         dict_hourlyRate = cls.get_item(dict_in=dict_in, key='hourlyRate')
+        #to prevent from get.item from None
         if dict_hourlyRate:
             return cls(amount=cls.get_item(dict_hourlyRate, key='amount')/100,
                    currency=cls.get_item(dict_hourlyRate, key='currency'))
         else:
+        #TODO make it more gentle, raise exception )
             return None
 
 class APIObjectID(APIObject):
@@ -197,7 +201,7 @@ class APIObjectID(APIObject):
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'))
 
 class UserGroup(APIObjectID):
-    """Group of Users - is used to assign multi[le users to project
+    """Group of Users - is used to assign multiple users to project
     TO DO: implement class
     """
 

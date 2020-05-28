@@ -33,7 +33,8 @@ Features
 * Add time entry to a Clockify workspace
 * Add entry with start and end time, or open-ended in stopwatch mode
 * Stop current stopwatch
-* Set Project for each time entry
+* Set Project, Task, Tag for each time entry
+* Get time entries to generate Reports
 
 
 Credits
