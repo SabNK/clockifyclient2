@@ -8,7 +8,7 @@ import pytest
 
 from clockifyclient.api import APIServer, APIServerException, APIErrorResponse
 from clockifyclient.client import ClockifyAPI, APISession
-from clockifyclient.models import APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+from clockifyclient.models import APIObjectID, HourlyRate, NamedAPIObject,\
     TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 from tests.factories import ClockifyMockResponses
 

@@ -28,7 +28,7 @@ class APIServer:
         self.url = url
 
     @except_connection_error
-    def get(self, path, api_key, params=None):
+    def get(self, path:str, api_key:str, params:dict=None):
         """
 
         Parameters
@@ -118,7 +118,7 @@ class APIServer:
             relative path to endpoint. Like '/user' or '/workspaces'
         api_key: str
             api key to send with request
-        data: Dict
+        data: dict
             data to send as json
 
         Returns
@@ -146,7 +146,7 @@ class APIRawResponse:
         """
         self.raw_response = raw_response
 
-    def parse(self):
+    def parse(self) -> dict:
         """Return API response as dict. If the response encodes an API error, raise Exception
 
         Raises
@@ -175,7 +175,7 @@ class APIRawResponse:
                 raise APIServerException(msg, error_response=error_response)
 
     @staticmethod
-    def parse_json(response):
+    def parse_json(response) -> dict:
         """Parse response json string from server into object
 
         Parameters

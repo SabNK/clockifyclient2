@@ -3,7 +3,8 @@ Models as simply as possible, omitting any fields not used by this package
 TODO complete class and methods documentation
 """
 
-from abc import abstractmethod
+from typing import Type
+from abc import ABC, abstractmethod
 import datetime
 
 import dateutil
@@ -53,23 +54,25 @@ class ClockifyDatetime:
     def __str__(self):
         return self.clockify_datetime
 
-class APIObject:
-    """An root for objects that is used in the clockify API and can be intiated from API response"""
+class APIObject(ABC):
+    """An root for objects that is used in the clockify API and its children
+    can be intiated from API response"""
 
     def __str__(self):
         return f"{self.__class__.__name__} "
 
     @classmethod
-    def get_item(cls, dict_in, key, raise_error=True):
+    def get_item(cls, dict_in: dict, key: str, raise_error: bool = True) -> object:
         """ Get item from dict, raise exception or return None if not found
 
         Parameters
         ----------
-        dict_in: Dict
+        dict_in: dict
             dict to search in
         key: str
             dict key
-        raise_error: Bool, optional
+        raise_error: bool,
+                    optional
             If True raises error when key not found. Otherwise returns None. Defaults to True
 
         Raises
@@ -98,11 +101,12 @@ class APIObject:
 
         Parameters
         ----------
-        dict_in: Dict
+        dict_in: dict
             dict to search in
         key: str
             dict key
-        raise_error: Bool, optional
+        raise_error: bool
+                    ,optional
             If True raises error when key not found. Otherwise returns None. Defaults to True
 
         Raises
@@ -131,9 +135,10 @@ class APIObject:
     @abstractmethod
     def init_from_dict(cls, dict_in):
         """ Create an instance of this class from the expected json dict returned from Clockify API
+
         Parameters
         ----------
-        dict_in: Dict
+        dict_in: dict
             As returned from Clockify API
 
         Raises
@@ -143,14 +148,17 @@ class APIObject:
 
         Returns
         -------
-        instance of this class, initialized to the values in dict_in
+        Type[APIObject]
+            instance of this class, initialized to the values in dict_in
 
         """
         return
 
+#TODO currency converter feature
 class HourlyRate(APIObject):
-    """Feature of users per project and per workspace and default for workspaces"""
-    def __init__(self, amount, currency):
+    """Feature of users per project and per workspace and default for project and workspace"""
+
+    def __init__(self, amount: float, currency: str):
         self.amount = amount
         self.currency = currency
 
@@ -158,15 +166,14 @@ class HourlyRate(APIObject):
         return super().__str__() + f"{self.amount} {self.currency}"
 
     @classmethod
-    def init_from_dict(cls, dict_in):
+    def init_from_dict(cls, dict_in) -> 'HourlyRate':
         dict_hourlyRate = cls.get_item(dict_in=dict_in, key='hourlyRate')
         #to prevent from get.item from None
         if dict_hourlyRate:
             return cls(amount=cls.get_item(dict_hourlyRate, key='amount')/100,
                    currency=cls.get_item(dict_hourlyRate, key='currency'))
-        else:
-        #TODO make it more gentle, raise exception )
-            return None
+        #else:
+            #return None
 
 class APIObjectID(APIObject):
     """An object that can be returned by the clockify API, has its ID, one level above json dicts."""
@@ -179,25 +186,37 @@ class APIObjectID(APIObject):
         """
         self.obj_id = obj_id
 
-    """Some objects may be omitted in Clockify (the regulation is forceProjects, forceTasks, forceTags, so we introduce
-    comparison to None to __eq__ and __ne__ methods"""
+
     def __eq__(self, other):
+        """Some objects may be omitted in Clockify time entry (the regulation is forceProjects,
+        forceTasks, forceTags), so we introduced comparison to None
+
+        Parameters
+        ----------
+        other: None or APIObjectID
+        """
+
         if other:
             return self.obj_id == other.obj_id
         else:
             return False
 
     def __ne__(self, other):
+        """
+        Parameters
+        ----------
+        other: None or APIObjectID"""
         return not self.__eq__(other)
 
     def __hash__(self):
+        """using Clockify hash stored in obj_id"""
         return self.obj_id.__hash__()
 
     def __str__(self):
         return super().__str__() + f"({self.obj_id}) "
 
     @classmethod
-    def init_from_dict(cls, dict_in):
+    def init_from_dict(cls, dict_in) -> Type[APIObject]:
         return cls(obj_id=cls.get_item(dict_in=dict_in, key='id'))
 
 class UserGroup(APIObjectID):
@@ -236,7 +255,7 @@ class NamedAPIObject(APIObjectID):
             name=cls.get_item(dict_in=dict_in, key='name'))
 
 class Workspace(NamedAPIObject):
-    def __init__(self, obj_id, name, hourly_rate, forceProjects, forceTasks, forceTags):
+    def __init__(self, obj_id, name, hourly_rate, forceProjects:bool=False, forceTasks:bool=False, forceTags:bool=False):
         super().__init__(obj_id=obj_id, name=name)
         self.hourly_rate = hourly_rate
         self.forceProjects = forceProjects
@@ -275,7 +294,7 @@ class User(NamedAPIObject):
                 hourly_rates[api_id_project_or_workspace] = HourlyRate.init_from_dict(membership)
         return cls(obj_id=obj_id, name=name, email=email, hourly_rates=hourly_rates)
 
-    def get_hourly_rate(self, workspace, project):
+    def get_hourly_rate(self, workspace, project) -> 'HourlyRate':
         if project in self.hourly_rates.keys() and self.hourly_rates[project]:
             return self.hourly_rates[project]
         elif project in project.hourly_rates.keys() and project.hourly_rates[project]:
@@ -285,8 +304,11 @@ class User(NamedAPIObject):
         else:
             return workspace.hourly_rate
 
+class Client(NamedAPIObject):
+    pass
+
 class Project(NamedAPIObject):
-    def __init__(self, obj_id, name, client, hourly_rates: {APIObjectID: HourlyRate}):
+    def __init__(self, obj_id, name:str, client: Client, hourly_rates: {APIObjectID: HourlyRate}):
         super().__init__(obj_id=obj_id, name=name)
         self.client = client
         self.hourly_rates = hourly_rates
@@ -307,7 +329,7 @@ class Project(NamedAPIObject):
                 hourly_rates[api_id_user] = HourlyRate.init_from_dict(membership)
         return cls(obj_id=obj_id, name=name, client=api_id_client, hourly_rates=hourly_rates)
 
-    def get_hourly_rate(self, workspace, user):
+    def get_hourly_rate(self, workspace, user) -> 'HourlyRate':
         if user in self.hourly_rates.keys() and self.hourly_rates[user]:
             return self.hourly_rates[user]
         elif self in self.hourly_rates.keys() and self.hourly_rates[self]:
@@ -317,8 +339,7 @@ class Project(NamedAPIObject):
         else:
             return workspace.hourly_rate
 
-class Client(NamedAPIObject):
-    pass
+
 
 class Task(NamedAPIObject):
     pass
@@ -328,19 +349,21 @@ class Tag(NamedAPIObject):
 
 class TimeEntry(APIObjectID):
 
-    def __init__(self, obj_id, start, user, description='', project=None, task=None, tags=None, end=None):
+    def __init__(self, obj_id: str, start, user: str, description='', project=None, task=None, tags=None, end=None):
         """
         Parameters
         ----------
         obj_id: str
             object id hash
-        start: DateTime
+        start: datetime
             Start of time entry
         description: str, optional
             Human readable description of this time entry. Defaults to empty string
-        project: Project, optional
+        project: Project,
+                optional
             Project associated with this entry. Defaults to None
-        end: DateTime, optional
+        end: DateTime,
+                optional
             End of time entry. Defaults to None, meaning timer mode is activated
         """
         super().__init__(obj_id=obj_id)

@@ -6,7 +6,7 @@ import dateutil
 import pytest
 
 from clockifyclient.models import \
-    APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+    APIObjectID, HourlyRate, NamedAPIObject,\
     TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 from tests.factories import ClockifyMockResponses
 
@@ -84,11 +84,12 @@ def test_date_conversion(mock_models_timezone):
 
 def test_str(a_date, an_hourly_rate, an_api_object_id):
     """Getting coverage up 11 classes"""
-    str(APIObject())
+    #str(APIObject())
     str(an_hourly_rate)
     str(an_api_object_id)
     str(NamedAPIObject(obj_id='123', name='test'))
-    str(Workspace(obj_id='123', name='test', hourly_rate=an_hourly_rate))
+    str(Workspace(obj_id='123', name='test', hourly_rate=an_hourly_rate,
+                  forceProjects=False, forceTasks=False, forceTags=False))
     str(User(obj_id='123', name='test', email='test@test.com',
              hourly_rates={an_api_object_id: an_hourly_rate}))
     str(Project(obj_id='123', name='test', client=an_api_object_id,
@@ -114,7 +115,7 @@ def test_get_hourly_rate(an_api_object_id, an_hourly_rate):
     #case #1 user has hourly_rate on project
     user = User('123', 'name', 'email', rates_123_10USD)
     project = Project('123', 'name', an_api_object_id, rates_123_10USD)
-    workspace = Workspace('789', 'name', h_rate_51RUR)
+    workspace = Workspace('789', 'name', h_rate_51RUR, False, False, False)
 
     user_hourly_rate = user.get_hourly_rate(workspace, project)
     project_hourly_rate = project.get_hourly_rate(workspace, user)
