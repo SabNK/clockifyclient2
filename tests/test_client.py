@@ -8,7 +8,7 @@ import pytest
 
 from clockifyclient.api import APIServer, APIServerException, APIErrorResponse
 from clockifyclient.client import ClockifyAPI, APISession
-from clockifyclient.models import APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+from clockifyclient.models import APIObjectID, HourlyRate, NamedAPIObject,\
     TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 from tests.factories import ClockifyMockResponses
 
@@ -88,7 +88,7 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert len(workspaces) == 2
     assert workspaces[0].obj_id == "5e5b8b0a95ae537fbde06e2f"
     assert workspaces[1].name == "Alice in Wonderland"
-    assert workspaces[0].hourly_rate.amount == 99
+    assert workspaces[0].hourly_rate.amount == 0.99
     assert workspaces[1].hourly_rate.currency == "GBP"
     assert workspaces[0].forceProjects == False
     assert workspaces[1].forceProjects == True
@@ -120,9 +120,9 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert projects[0].name == "Down the Rabbit Hole"
     assert projects[1].obj_id == "5e5b9f0195ae537fbde078bc"
     assert APIObjectID(obj_id="5e5b9c7995ae537fbde0778c") in projects[0].hourly_rates.keys()
-    assert projects[0].hourly_rates[projects[0]].amount == 35
+    assert projects[0].hourly_rates[projects[0]].amount == 0.35
     assert users[0] in projects[0].hourly_rates.keys()
-    assert projects[0].hourly_rates[users[0]].amount == 75
+    assert projects[0].hourly_rates[users[0]].amount == 0.75
 
     mock_requests.set_response(ClockifyMockResponses.GET_TASKS)
     tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project=projects[0])

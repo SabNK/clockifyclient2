@@ -29,12 +29,12 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_default_workspace(self):
+    def get_default_workspace(self) -> Workspace:
         return self.api.get_workspaces(api_key=self.api_key)[0]
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_workspaces(self):
+    def get_workspaces(self) -> list[Workspace]:
         return self.api.get_workspaces(api_key=self.api_key)
 
     @lru_cache()
@@ -44,12 +44,12 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_users(self, workspace):
+    def get_users(self, workspace) -> list[User]:
         return self.api.get_users(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_projects(self, workspace):
+    def get_projects(self, workspace) -> Project:
         return self.api.get_projects(api_key=self.api_key,workspace=workspace)
 
     @lru_cache()
@@ -64,7 +64,7 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_tags(self, workspace):
+    def get_tags(self, workspace) -> list[Tag]:
         return self.api.get_tags(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
@@ -171,6 +171,7 @@ class APISession:
         Returns
         -------
         datetime.datetime
+
         """
         return datetime.datetime.utcnow()
 
@@ -181,6 +182,7 @@ class ClockifyAPI:
     Notes
     -----
     For lower level (http) interactions, see api.APIServer
+
     """
 
     def __init__(self, api_server: APIServer):
@@ -193,7 +195,7 @@ class ClockifyAPI:
         """
         self.api_server = api_server
 
-    def get_workspaces(self, api_key):
+    def get_workspaces(self, api_key) -> list[Workspace]:
         """Get all workspaces for the given api key
 
         Parameters
@@ -222,7 +224,7 @@ class ClockifyAPI:
         response = self.api_server.get(path="/user", api_key=api_key)
         return User.init_from_dict(response)
 
-    def get_users(self, api_key, workspace):
+    def get_users(self, api_key, workspace) -> list[User]:
         """Get users for the given workspace
 
         Parameters
@@ -239,7 +241,7 @@ class ClockifyAPI:
         response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
         return [User.init_from_dict(x) for x in response]
 
-    def get_projects(self, api_key, workspace):
+    def get_projects(self, api_key, workspace) -> Project:
         """Get all projects for given workspace
 
         Parameters
@@ -259,7 +261,7 @@ class ClockifyAPI:
         )
         return [Project.init_from_dict(x) for x in response]
 
-    def get_clients(self, api_key, workspace):
+    def get_clients(self, api_key, workspace) -> list[Client]:
         """Get all clients for given workspace
 
         Parameters
@@ -279,7 +281,7 @@ class ClockifyAPI:
         )
         return [Client.init_from_dict(x) for x in response]
 
-    def get_tasks(self, api_key, workspace, project):
+    def get_tasks(self, api_key, workspace, project) -> list[Task]:
         """Get all tasks for given project
 
         Parameters
@@ -300,7 +302,7 @@ class ClockifyAPI:
         )
         return [Task.init_from_dict(x) for x in response]
 
-    def get_tags(self, api_key, workspace):
+    def get_tags(self, api_key, workspace) -> list[Tag]:
         """Get all tags for given workspace
 
         Parameters

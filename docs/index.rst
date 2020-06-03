@@ -1,14 +1,19 @@
-Welcome to Clockify API Python client's documentation!
+Clockify Python Client
 ======================================
+Guide
+~~~~~
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Con65tents:
+
+
 
    readme
    installation
-   usage
-   modules
+   examples
+   reference
+   license
    contributing
    authors
    history

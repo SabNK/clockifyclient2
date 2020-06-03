@@ -4,7 +4,7 @@ import datetime
 from tests.factories import RequestsMock
 from pytest import fixture
 from clockifyclient.models import \
-    APIObject, APIObjectID, HourlyRate, NamedAPIObject,\
+    APIObjectID, HourlyRate, NamedAPIObject,\
     TimeEntry, User, Project, Task, Workspace, Tag, Client, ClockifyDatetime
 
 @fixture
