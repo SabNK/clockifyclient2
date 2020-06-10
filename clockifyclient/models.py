@@ -3,7 +3,7 @@ Models as simply as possible, omitting any fields not used by this package
 TODO complete class and methods documentation
 """
 
-from typing import Type
+from typing import Type, List
 from abc import ABC, abstractmethod
 import datetime
 

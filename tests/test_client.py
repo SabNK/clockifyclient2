@@ -54,6 +54,15 @@ def an_hourly_rate_2():
 def an_api(a_server):
     return ClockifyAPI(api_server=a_server)
 
+#TODO delete
+@pytest.fixture()
+def test_create_workspace():
+    api_key = ''
+    api_server = APIServer('https://api.clockify.me/api/v1')
+    api_session = APISession(api_server, api_key)
+    workspace = api_session.make_workspace('dev1')
+    assert workspace.name == 'dev1'
+
 @pytest.fixture()
 def a_time_entry(a_project):
     api_123 = APIObjectID(obj_id='123')

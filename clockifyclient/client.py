@@ -4,7 +4,7 @@ from clockifyclient.api import APIServer, APIServer404
 from clockifyclient.decorators import request_rate_watchdog
 from clockifyclient.models import Workspace, User, Project, Task, TimeEntry, ClockifyDatetime, Tag, Client, HourlyRate
 from functools import lru_cache
-
+from typing import List, Dict
 
 class APISession:
     """Models the interaction of one user with one workspace. Caches current user, workspace and projects.
@@ -34,8 +34,12 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_workspaces(self) -> list[Workspace]:
+    def get_workspaces(self) -> List[Workspace]:
         return self.api.get_workspaces(api_key=self.api_key)
+
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
+    def make_workspace(self, workspace_name: str) -> Workspace:
+        return self.api.make_workspace(api_key=self.api_key, workspace_name=workspace_name)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
@@ -44,7 +48,7 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_users(self, workspace) -> list[User]:
+    def get_users(self, workspace) -> List[User]:
         return self.api.get_users(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
@@ -64,15 +68,27 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_tags(self, workspace) -> list[Tag]:
+    def get_tags(self, workspace) -> List[Tag]:
         return self.api.get_tags(api_key=self.api_key, workspace=workspace)
 
     @lru_cache()
-    def get_projects_with_tasks(self, workspace):
+    def get_projects_with_tasks(self, workspace) -> Dict[Project, Task]:
+        """Get all Projects and Tasks for the given workspace, include None if Projects
+        are not obligatory when entering time entry in Clockify, the same for Tasks. It is
+        regulated by forceProjects and forceTasks in Workspace respectively
+
+        Parameters
+        ----------
+        workspace: Workspace
+
+        Returns
+        -------
+        Dict with Projects and Tasks in the workspace
+        """
         projects = self.get_projects(workspace=workspace)
         projects_with_tasks = {} if workspace.forceProjects else {None: [None]}
         for project in projects:
-            if workspace.forceTags:
+            if workspace.forceTasks:
                 projects_with_tasks[project] = self.get_tasks(workspace=workspace, project=project)
             else:
                 projects_with_tasks[project] = [None] + self.get_tasks(workspace=workspace, project=project)
@@ -116,6 +132,8 @@ class APISession:
         ----------
         start_time: datetime, UTC
             Set start of time entry to this
+        user: User
+            current user is supposed
         end_time: datetime, UTC, optional
             Set end of time entry to this. If not given, activate stopwatch mode. Defaults to None
         description: str, optional
@@ -191,11 +209,11 @@ class ClockifyAPI:
         Parameters
         ----------
         api_server: APIServer
-            Server to use for communication
-        """
+        Server to use for communication"""
+
         self.api_server = api_server
 
-    def get_workspaces(self, api_key) -> list[Workspace]:
+    def get_workspaces(self, api_key) -> List[Workspace]:
         """Get all workspaces for the given api key
 
         Parameters
@@ -208,6 +226,23 @@ class ClockifyAPI:
         List[Workspace]"""
         response = self.api_server.get(path="/workspaces", api_key=api_key)
         return [Workspace.init_from_dict(x) for x in response]
+
+    def make_workspace(self, api_key, workspace_name) -> Workspace:
+        """Post and create in Clockify workspace using workspace name with the given api key
+
+        Parameters
+        ----------
+        api_key: str
+            Clockify Api key
+        workspace_name: str
+            The name of the workspace to be created
+
+        Returns
+        -------
+        Workspace
+        """
+        response = self.api_server.post(path="/workspaces", api_key=api_key, data={"name": workspace_name})
+        return Workspace.init_from_dict(response)
 
     def get_user(self, api_key):
         """Get the user for the given api key
@@ -224,7 +259,7 @@ class ClockifyAPI:
         response = self.api_server.get(path="/user", api_key=api_key)
         return User.init_from_dict(response)
 
-    def get_users(self, api_key, workspace) -> list[User]:
+    def get_users(self, api_key, workspace) -> List[User]:
         """Get users for the given workspace
 
         Parameters
@@ -241,7 +276,26 @@ class ClockifyAPI:
         response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
         return [User.init_from_dict(x) for x in response]
 
-    def get_projects(self, api_key, workspace) -> Project:
+    def make_project(self, api_key: str, project_name: str, client: Client = None,
+                     additional_data: {str:str}=None)-> Project:
+        """Post and create in Clockify project using project name with the given api key,
+        for the given workspace
+
+        Parameters
+        ----------
+        api_key: str
+            Clockify Api key
+        project_name: str
+            The name of the workspace to be created
+
+        Returns
+        -------
+        Project
+        """
+        response = self.api_server.post(path="/workspaces", api_key=api_key, data={"name": workspace_name})
+        return Workspace.init_from_dict(response)
+
+    def get_projects(self, api_key, workspace) -> List[Project]:
         """Get all projects for given workspace
 
         Parameters
@@ -261,7 +315,7 @@ class ClockifyAPI:
         )
         return [Project.init_from_dict(x) for x in response]
 
-    def get_clients(self, api_key, workspace) -> list[Client]:
+    def get_clients(self, api_key, workspace) -> List[Client]:
         """Get all clients for given workspace
 
         Parameters
@@ -281,7 +335,7 @@ class ClockifyAPI:
         )
         return [Client.init_from_dict(x) for x in response]
 
-    def get_tasks(self, api_key, workspace, project) -> list[Task]:
+    def get_tasks(self, api_key, workspace, project) -> List[Task]:
         """Get all tasks for given project
 
         Parameters
@@ -302,7 +356,7 @@ class ClockifyAPI:
         )
         return [Task.init_from_dict(x) for x in response]
 
-    def get_tags(self, api_key, workspace) -> list[Tag]:
+    def get_tags(self, api_key, workspace) -> List[Tag]:
         """Get all tags for given workspace
 
         Parameters
@@ -322,8 +376,8 @@ class ClockifyAPI:
         )
         return [Tag.init_from_dict(x) for x in response]
 
-    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks:{Project:[Task]}=None,
-                                   tags=None):
+    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks: {Project: [Task]} = None,
+                                   tags=None) -> List[TimeEntry]:
         if users:
             users_dict = {user: user for user in users}
         if projects_with_tasks:
