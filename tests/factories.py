@@ -111,7 +111,7 @@ class ClockifyMockResponses:
         "id": "5e5b8b0a95ae537fbde06e2f",
         "name": "Lewis Carroll's workspace",
         "hourlyRate": {
-            "amount": 0,
+            "amount": 1400,
             "currency": "USD"
         },
         "memberships": [
@@ -207,9 +207,9 @@ class ClockifyMockResponses:
             "canSeeTimeSheet": false,
             "canSeeTracker": true,
             "projectPickerSpecialFilter": false,
-            "forceProjects": false,
-            "forceTasks": false,
-            "forceTags": false,
+            "forceProjects": true,
+            "forceTasks": true,
+            "forceTags": true,
             "forceDescription": false,
             "onlyAdminsSeeAllTimeEntries": false,
             "onlyAdminsSeePublicProjectsEntries": false,
@@ -346,7 +346,10 @@ class ClockifyMockResponses:
         "memberships": [
             {
                 "userId": "5e5b8b0a95ae537fbde06e2e",
-                "hourlyRate": null,
+                "hourlyRate": {
+                    "amount": 1400,
+                    "currency": "USD"
+                },
                 "targetId": "5e5b8b0a95ae537fbde06e2f",
                 "membershipType": "WORKSPACE",
                 "membershipStatus": "ACTIVE"
@@ -367,7 +370,10 @@ class ClockifyMockResponses:
             },
             {
                 "userId": "5e5b8b0a95ae537fbde06e2e",
-                "hourlyRate": null,
+                "hourlyRate": {
+                    "amount": 1400,
+                    "currency": "RUR"
+                },
                 "targetId": "5e5b9f0195ae537fbde078bc",
                 "membershipType": "PROJECT",
                 "membershipStatus": "ACTIVE"
@@ -662,7 +668,7 @@ class ClockifyMockResponses:
         "id": "5e5b9c7995ae537fbde0778c",
         "name": "Down the Rabbit Hole",
         "hourlyRate": {
-            "amount": 0,
+            "amount": 35,
             "currency": "GBP"
         },
         "clientId": "5e78f6d6ff66a323df51be99",
@@ -671,7 +677,10 @@ class ClockifyMockResponses:
         "memberships": [
             {
                 "userId": "5e5b8b0a95ae537fbde06e2e",
-                "hourlyRate": null,
+                "hourlyRate": {
+                    "amount": 75,
+                    "currency": "GBP"
+                },
                 "targetId": "5e5b9c7995ae537fbde0778c",
                 "membershipType": "PROJECT",
                 "membershipStatus": "ACTIVE"

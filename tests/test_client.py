@@ -48,7 +48,7 @@ def a_user(an_api_object_id, an_hourly_rate):
 
 @pytest.fixture()
 def an_hourly_rate_2():
-    return HourlyRate( currency='RUR', amount=1000.90)
+    return HourlyRate(currency='RUR', amount=1000.90)
 
 @pytest.fixture()
 def an_api(a_server):
@@ -94,10 +94,10 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     """Some regular calls to api should yield correct python objects """
     mock_requests.set_response(ClockifyMockResponses.GET_WORKSPACES)
     workspaces = an_api.get_workspaces(api_key='mock_key')
-    assert len(workspaces) == 2
+    assert len(workspaces) == 4
     assert workspaces[0].obj_id == "5e5b8b0a95ae537fbde06e2f"
     assert workspaces[1].name == "Alice in Wonderland"
-    assert workspaces[0].hourly_rate.amount == 0.99
+    assert workspaces[0].hourly_rate.amount == 14
     assert workspaces[1].hourly_rate.currency == "GBP"
     assert workspaces[0].forceProjects == False
     assert workspaces[1].forceProjects == True
@@ -117,37 +117,37 @@ def test_api_calls_get(mock_requests, an_api, a_date):
     assert user.hourly_rates[APIObjectID(obj_id="5e5b9f0195ae537fbde078bc")].currency == "RUR"
 
     mock_requests.set_response(ClockifyMockResponses.GET_USERS)
-    users = an_api.get_users(api_key='mock_key', workspace=workspaces[1])
-    assert len(users) == 4
-    assert users[0].obj_id == "5e5b91837df81c0df5f29609"
-    assert users[1].name == "Cheshire Cat"
-    assert users[2].email == "lewis_carroll_1832@mail.ru"
+    users = an_api.get_users(api_key='mock_key', workspace=workspaces[1], page_size=50)
+    assert len(users) == 3
+    assert users[0].obj_id == "5e5b8b0a95ae537fbde06e2e"
+    assert users[1].name == "Алиса"
+    assert users[2].email == "white.rabbit.1865@mail.ru"
 
     mock_requests.set_response(ClockifyMockResponses.GET_PROJECTS)
-    projects = an_api.get_projects(api_key='mock_key', workspace=workspaces[1])
-    assert len(projects) == 2
+    projects = an_api.get_projects(api_key='mock_key', workspace=workspaces[1], page_size=50)
+    assert len(projects) == 3
     assert projects[0].name == "Down the Rabbit Hole"
-    assert projects[1].obj_id == "5e5b9f0195ae537fbde078bc"
+    assert projects[2].obj_id == "5e5b9f0195ae537fbde078bc"
     assert APIObjectID(obj_id="5e5b9c7995ae537fbde0778c") in projects[0].hourly_rates.keys()
     assert projects[0].hourly_rates[projects[0]].amount == 0.35
     assert users[0] in projects[0].hourly_rates.keys()
     assert projects[0].hourly_rates[users[0]].amount == 0.75
 
     mock_requests.set_response(ClockifyMockResponses.GET_TASKS)
-    tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project=projects[0])
-    assert len(tasks) == 2
-    assert tasks[0].name == "drink me"
-    assert tasks[1].obj_id == "5e5ba91100352a1175bc90fa"
+    tasks = an_api.get_tasks(api_key='mock_key', workspace=workspaces[1], project=projects[0], page_size=50)
+    assert len(tasks) == 6
+    assert tasks[4].name == "drink me"
+    assert tasks[5].obj_id == "5e5ba91100352a1175bc90fa"
 
     mock_requests.set_response(ClockifyMockResponses.GET_TAGS)
-    tags = an_api.get_tags(api_key='mock_key', workspace=workspaces[1])
-    assert len(tags) == 3
-    assert tags[0].name == "test"
-    assert tags[1].obj_id == "5e6381b72fe7db4da05dea37"
-    assert tags[2].name == "test3"
+    tags = an_api.get_tags(api_key='mock_key', workspace=workspaces[1], page_size=50)
+    assert len(tags) == 7
+    assert tags[0].name == "action"
+    assert tags[1].obj_id == "5e78f822e0083d68087a09db"
+    assert tags[2].name == "communication"
 
     mock_requests.set_response(ClockifyMockResponses.GET_CLIENTS)
-    clients = an_api.get_clients(api_key='mock_key', workspace=workspaces[1])
+    clients = an_api.get_clients(api_key='mock_key', workspace=workspaces[1], page_size=50)
     assert len(clients) == 1
     assert clients[0].name == "Читатель"
     assert clients[0].obj_id == "5e654fc62fe7db4da05e7958"
@@ -161,8 +161,9 @@ def test_api_calls_get(mock_requests, an_api, a_date):
                                            workspace=workspaces[0],
                                            user=users[0],
                                            start_datetime=a_date,
-                                           end_datetime=a_date)
-    assert len(time_entries) == 3
+                                           end_datetime=a_date,
+                                           page_size=50)
+    assert len(time_entries) == 21
     assert time_entries[0].description.endswith("ключ")
     assert time_entries[2].end == \
            datetime.datetime(2020, 3, 8, hour=18, minute=30, tzinfo=tzutc())
