@@ -48,31 +48,32 @@ class APISession:
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_users(self, workspace) -> List[User]:
-        return self.api.get_users(api_key=self.api_key, workspace=workspace)
+    def get_users(self, workspace, page_size=200) -> List[User]:
+        return self.api.get_users(api_key=self.api_key, workspace=workspace, page_size=page_size)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_projects(self, workspace) -> Project:
-        return self.api.get_projects(api_key=self.api_key,workspace=workspace)
+    def get_projects(self, workspace, page_size=200) -> Project:
+        return self.api.get_projects(api_key=self.api_key, workspace=workspace, page_size=page_size)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_clients(self, workspace):
-        return self.api.get_clients(api_key=self.api_key, workspace=workspace)
+    def get_clients(self, workspace, page_size=200):
+        return self.api.get_clients(api_key=self.api_key, workspace=workspace, page_size=page_size)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_tasks(self, workspace, project):
-        return self.api.get_tasks(api_key=self.api_key, workspace=workspace, project=project)
+    def get_tasks(self, workspace, project, page_size=200):
+        return self.api.get_tasks(api_key=self.api_key, workspace=workspace,
+                                  project=project, page_size=page_size)
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_tags(self, workspace) -> List[Tag]:
-        return self.api.get_tags(api_key=self.api_key, workspace=workspace)
+    def get_tags(self, workspace, page_size=200) -> List[Tag]:
+        return self.api.get_tags(api_key=self.api_key, workspace=workspace, page_size=page_size)
 
     @lru_cache()
-    def get_projects_with_tasks(self, workspace) -> Dict[Project, Task]:
+    def get_projects_with_tasks(self, workspace, page_size=200) -> Dict[Project, List[Task]]:
         """Get all Projects and Tasks for the given workspace, include None if Projects
         are not obligatory when entering time entry in Clockify, the same for Tasks. It is
         regulated by forceProjects and forceTasks in Workspace respectively
@@ -85,23 +86,26 @@ class APISession:
         -------
         Dict with Projects and Tasks in the workspace
         """
-        projects = self.get_projects(workspace=workspace)
+        projects = self.get_projects(workspace=workspace, page_size=page_size)
         projects_with_tasks = {} if workspace.forceProjects else {None: [None]}
         for project in projects:
             if workspace.forceTasks:
-                projects_with_tasks[project] = self.get_tasks(workspace=workspace, project=project)
+                projects_with_tasks[project] = self.get_tasks(workspace=workspace,
+                                                              project=project, page_size=page_size)
             else:
-                projects_with_tasks[project] = [None] + self.get_tasks(workspace=workspace, project=project)
+                projects_with_tasks[project] = [None] + self.get_tasks(workspace=workspace,
+                                                                       project=project, page_size=page_size)
         return projects_with_tasks
 
     @lru_cache()
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
-    def get_time_entries(self, workspace, user, start_datetime, end_datetime):
+    def get_time_entries(self, workspace, user, start_datetime, end_datetime, page_size=200):
         return self.api.get_time_entries(api_key=self.api_key,
                                          workspace=workspace,
                                          user=user,
                                          start_datetime=start_datetime,
-                                         end_datetime=end_datetime)
+                                         end_datetime=end_datetime,
+                                         page_size=page_size)
 
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def add_time_entry_object(self, time_entry: TimeEntry):
@@ -259,7 +263,7 @@ class ClockifyAPI:
         response = self.api_server.get(path="/user", api_key=api_key)
         return User.init_from_dict(response)
 
-    def get_users(self, api_key, workspace) -> List[User]:
+    def get_users(self, api_key, workspace, page_size) -> List[User]:
         """Get users for the given workspace
 
         Parameters
@@ -268,12 +272,14 @@ class ClockifyAPI:
             Clockify Api key
         workspace: Workspace
             Get users in this workspace
-
+        page_size: int
+            Number of records in one response
         Returns
         -------
         List[User]
         """
-        response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key)
+        params = {'page-size': page_size}
+        response = self.api_server.get(path=f"/workspaces/{workspace.obj_id}/users", api_key=api_key, params=params)
         return [User.init_from_dict(x) for x in response]
 
     def make_project(self, api_key: str, project_name: str, client: Client = None,
@@ -295,7 +301,7 @@ class ClockifyAPI:
         response = self.api_server.post(path="/workspaces", api_key=api_key, data={"name": workspace_name})
         return Workspace.init_from_dict(response)
 
-    def get_projects(self, api_key, workspace) -> List[Project]:
+    def get_projects(self, api_key, workspace, page_size) -> List[Project]:
         """Get all projects for given workspace
 
         Parameters
@@ -304,18 +310,21 @@ class ClockifyAPI:
             Clockify Api key
         workspace: Workspace
             Get projects in this workspace
+        page_size: int
+            Number of records in one response
 
         Returns
         -------
         List[Project]
 
         """
+        params = {'page-size': page_size}
         response = self.api_server.get(
-            path=f"/workspaces/{workspace.obj_id}/projects", api_key=api_key
+            path=f"/workspaces/{workspace.obj_id}/projects", api_key=api_key, params=params
         )
         return [Project.init_from_dict(x) for x in response]
 
-    def get_clients(self, api_key, workspace) -> List[Client]:
+    def get_clients(self, api_key, workspace, page_size) -> List[Client]:
         """Get all clients for given workspace
 
         Parameters
@@ -324,18 +333,23 @@ class ClockifyAPI:
             Clockify Api key
         workspace: Workspace
             Get clients in this workspace
+        page_size: int
+            Number of records in one response
 
         Returns
         -------
         List[Client]
 
         """
+        params = {'page-size': page_size}
         response = self.api_server.get(
-            path=f"/workspaces/{workspace.obj_id}/clients", api_key=api_key
+            path=f"/workspaces/{workspace.obj_id}/clients",
+            api_key=api_key,
+            params=params
         )
         return [Client.init_from_dict(x) for x in response]
 
-    def get_tasks(self, api_key, workspace, project) -> List[Task]:
+    def get_tasks(self, api_key, workspace, project, page_size) -> List[Task]:
         """Get all tasks for given project
 
         Parameters
@@ -345,18 +359,23 @@ class ClockifyAPI:
         workspace: Workspace
         project: Project
             Get tasks in this project
+        page_size: int
+            Number of records in one response
 
         Returns
         -------
         List[Task]
 
         """
+        params = {'page-size': page_size}
         response = self.api_server.get(
-            path=f"/workspaces/{workspace.obj_id}/projects/{project.obj_id}/tasks", api_key=api_key
+            path=f"/workspaces/{workspace.obj_id}/projects/{project.obj_id}/tasks",
+            api_key=api_key,
+            params=params
         )
         return [Task.init_from_dict(x) for x in response]
 
-    def get_tags(self, api_key, workspace) -> List[Tag]:
+    def get_tags(self, api_key, workspace, page_size) -> List[Tag]:
         """Get all tags for given workspace
 
         Parameters
@@ -365,19 +384,45 @@ class ClockifyAPI:
             Clockify Api key
         workspace: Workspace
             Get tags in this workspace
+        page_size: int
+            Number of records in one response
 
         Returns
         -------
         List[Tag]
 
         """
+        params = {'page-size': page_size}
         response = self.api_server.get(
-            path=f"/workspaces/{workspace.obj_id}/tags", api_key=api_key
+            path=f"/workspaces/{workspace.obj_id}/tags",
+            api_key=api_key,
+            params=params
         )
         return [Tag.init_from_dict(x) for x in response]
 
-    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks: {Project: [Task]} = None,
+    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks: {Project: [Task]}= None,
                                    tags=None) -> List[TimeEntry]:
+        """Fill time entries with links to users, projects with tasks and tags instead of simple API_ID entities
+
+        Parameters
+        ----------
+        time_entries : List[TimeEntry]
+            a list of time entries to work on
+        users: List[User]
+            a list of users to set a link to
+        projects_with_tasks : Dict[Project, List [Task]]
+            a dict of projects and lists of tasks to set a link to
+        tags : List[Tag]
+            a list of tags to set a link to
+        page_size: int
+            Number of records in one response
+
+        Returns
+        -------
+        List[TimeEntry]
+
+        """
+
         if users:
             users_dict = {user: user for user in users}
         if projects_with_tasks:
@@ -405,13 +450,38 @@ class ClockifyAPI:
         return modified_time_entries
 
     def get_time_entries(self, api_key: str, workspace: Workspace, user: User,
-                         start_datetime, end_datetime):
+                         start_datetime, end_datetime, page_size) -> List[TimeEntry]:
+        """Get all time entries for given workspace, user within datetime interval
+
+        Parameters
+        ----------
+        api_key: str
+            Clockify Api key
+        workspace: Workspace
+            Get time entries in this workspace
+        user : User
+            Get time entries for this user
+        start_datetime : ClockifyDatetime
+            start datetime for query
+        end_datetime : ClockifyDatetime
+            end datetime for query
+        page_size: int
+            Number of records in one response
+
+        Returns
+        -------
+        List[TimeEntry]
+
+        """
+
         params = {'start': ClockifyDatetime(start_datetime).clockify_datetime,
-                  'end': ClockifyDatetime(end_datetime).clockify_datetime}
+                  'end': ClockifyDatetime(end_datetime).clockify_datetime,
+                  'page-size': page_size}
         response = self.api_server.get(
             path=f"/workspaces/{workspace.obj_id}/user/{user.obj_id}/time-entries",
             api_key=api_key,
-            params=params)
+            params=params
+        )
         return [TimeEntry.init_from_dict(te) for te in response]
 
     def add_time_entry(self, api_key: str, workspace: Workspace, time_entry: TimeEntry):
