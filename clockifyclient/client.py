@@ -107,6 +107,19 @@ class APISession:
                                          end_datetime=end_datetime,
                                          page_size=page_size)
 
+    #ToDo for Local TimeSheet...
+    @lru_cache()
+    @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
+    def get_time_entries_local(self, workspace, user, start_datetime, end_datetime, page_size=200):
+
+        return self.api.get_time_entries(api_key=self.api_key,
+                                         workspace=workspace,
+                                         user=user,
+                                         start_datetime=start_datetime,
+                                         end_datetime=end_datetime,
+                                         page_size=page_size)
+
+
     @request_rate_watchdog(APIServer.RATE_LIMIT_REQUESTS_PER_SECOND)
     def add_time_entry_object(self, time_entry: TimeEntry):
         """Add the given time entry to the default workspace
@@ -451,7 +464,7 @@ class ClockifyAPI:
 
     def get_time_entries(self, api_key: str, workspace: Workspace, user: User,
                          start_datetime, end_datetime, page_size) -> List[TimeEntry]:
-        """Get all time entries for given workspace, user within datetime interval
+        """Get all time entries for given workspace, user within datetime UTC interval
 
         Parameters
         ----------
@@ -461,9 +474,9 @@ class ClockifyAPI:
             Get time entries in this workspace
         user : User
             Get time entries for this user
-        start_datetime : ClockifyDatetime
+        start_datetime : datetime, UTC
             start datetime for query
-        end_datetime : ClockifyDatetime
+        end_datetime : datetime, UTC
             end datetime for query
         page_size: int
             Number of records in one response
