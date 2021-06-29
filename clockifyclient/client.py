@@ -413,8 +413,8 @@ class ClockifyAPI:
         )
         return [Tag.init_from_dict(x) for x in response]
 
-    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks: {Project: [Task]}= None,
-                                   tags=None) -> List[TimeEntry]:
+    def substitute_api_id_entities(self, time_entries, users=None, projects_with_tasks: {Project: [Task]} = None,
+                                   tags: [Tag] = None) -> List[TimeEntry]:
         """Fill time entries with links to users, projects with tasks and tags instead of simple API_ID entities
 
         Parameters
@@ -427,8 +427,6 @@ class ClockifyAPI:
             a dict of projects and lists of tasks to set a link to
         tags : List[Tag]
             a list of tags to set a link to
-        page_size: int
-            Number of records in one response
 
         Returns
         -------
@@ -456,7 +454,7 @@ class ClockifyAPI:
             if tags and time_entry.tags:
                 t_e_tags = []
                 for tag in time_entry.tags:
-                    if tag.__hash__() in [t_e_t.__hash__() for t_e_t in time_entry.tags]:
+                    if tag in tags_dict.keys():
                         t_e_tags.append(tags_dict[tag])
                 time_entry.tags = t_e_tags
             modified_time_entries.append(time_entry)

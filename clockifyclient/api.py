@@ -17,6 +17,7 @@ class APIServer:
     For higher level interactions, see client.ClockifyAPI
     """
     RATE_LIMIT_REQUESTS_PER_SECOND = 10  # https://clockify.me/developers-api - limit by api
+
     def __init__(self, url):
         """
 
@@ -28,7 +29,7 @@ class APIServer:
         self.url = url
 
     @except_connection_error
-    def get(self, path:str, api_key:str, params:dict=None):
+    def get(self, path: str, api_key: str, params: dict = None):
         """
 
         Parameters
